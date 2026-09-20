@@ -216,3 +216,39 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ═══════════════════════════════════════════════════════════════
+#  botyaranewtab — project-specific
+# ═══════════════════════════════════════════════════════════════
+
+# Local database (contains your personal settings, shortcuts, notes)
+botyaranewtab.db
+botyaranewtab.db-journal
+botyaranewtab.db-wal
+botyaranewtab.db-shm
+
+# Database backups (any kind of .okak, .bak, etc.)
+*.db.okak
+*.db.bak
+*.db.backup
+*.okak
+
+# Backups directory (created at runtime)
+backups/*
+!backups/.gitkeep
+
+# Runtime folders — keep folder, ignore contents
+static/icons/*
+!static/icons/.gitkeep
+
+static/backgrounds/*
+!static/backgrounds/.gitkeep
+
+static/sounds/*
+!static/sounds/.gitkeep
+
+static/fonts/Custom/*
+!static/fonts/Custom/.gitkeep
+
+# Logs
+*.log
