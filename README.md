@@ -21,7 +21,7 @@ No cloud. No telemetry. No accounts. Just you and your data.
 ---
 
 <p align="center">
-  <img src="docs/screenshots/hero.png" alt="botyaranewtab — fully customized" width="100%">
+  <img src="docs/screenshots/hero.webp" alt="botyaranewtab — fully customized" width="100%">
 </p>
 
 ---
@@ -124,34 +124,34 @@ Unlike other new tab extensions that lock you into their design, their servers, 
 ### 🏠 Main view
 
 <p align="center">
-  <img src="docs/screenshots/hero.png" alt="Main view — fully customized" width="100%">
+  <img src="docs/screenshots/hero.webp" alt="Main view — fully customized" width="100%">
 </p>
 
 ### 🎛️ Settings — deep customization
 
 <p align="center">
-  <img src="docs/screenshots/appearance1.png" alt="Appearance settings — part 1" width="32%">
-  <img src="docs/screenshots/appearance2.png" alt="Appearance settings — part 2" width="32%">
-  <img src="docs/screenshots/appearance3.png" alt="Appearance settings — part 3" width="32%">
+  <img src="docs/screenshots/appearance1.webp" alt="Appearance settings — part 1" width="32%">
+  <img src="docs/screenshots/appearance2.webp" alt="Appearance settings — part 2" width="32%">
+  <img src="docs/screenshots/appearance3.webp" alt="Appearance settings — part 3" width="32%">
 </p>
 
 ### 🧩 Widgets
 
 <p align="center">
-  <img src="docs/screenshots/widgets.png" alt="Widgets settings" width="70%">
+  <img src="docs/screenshots/widgets.webp" alt="Widgets settings" width="70%">
 </p>
 
 ### 🔍 Inline calculator & smart search
 
 <p align="center">
-  <img src="docs/screenshots/calcsimple.png" alt="Inline calculator — simple math" width="49%">
-  <img src="docs/screenshots/calchard.png" alt="Inline calculator — advanced" width="49%">
+  <img src="docs/screenshots/calcsimple.webp" alt="Inline calculator — simple math" width="49%">
+  <img src="docs/screenshots/calchard.webp" alt="Inline calculator — advanced" width="49%">
 </p>
 
 ### 🎨 Default look (out of the box)
 
 <p align="center">
-  <img src="docs/screenshots/default.png" alt="Default view after first run" width="70%">
+  <img src="docs/screenshots/default.webp" alt="Default view after first run" width="70%">
 </p>
 
 ---
