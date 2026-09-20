@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="catppuccin-mocha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>botyaranewtab</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Background layers -->
+    <div id="bg-layer" class="bg-layer"></div>
+    <div id="bg-overlay" class="bg-overlay"></div>
+    <div id="bg-vignette" class="bg-vignette hidden"></div>
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content">
+        <!-- Clock -->
+        <div id="widget-clock" class="widget widget-clock">
+            <div id="clock-time" class="clock-time">00:00</div>
+            <div id="clock-date" class="clock-date"></div>
+        </div>
+
+        <!-- Greeting -->
+        <div id="widget-greeting" class="widget widget-greeting">
+            <span id="greeting-text"></span>
+        </div>
+
+        <!-- Search -->
+        <div id="search-container" class="search-container">
+            <div class="search-wrapper">
+                <button id="search-engine-btn" class="search-engine-btn" title="Switch engine">
+                    <span id="search-engine-icon" class="search-engine-icon-text">G</span>
+                </button>
+                <input type="text" id="search-input" class="search-input"
+                       placeholder="Search or enter URL…" autocomplete="off" spellcheck="false">
+                <button id="search-add-btn" class="search-add-btn hidden" title="Add as shortcut">
+                    <span class="nf"></span>
+                </button>
+                <button id="search-settings-btn" class="search-settings-btn hidden" title="Settings">
+                    <span class="nf">󰒓</span>
+                </button>
+            </div>
+            <div id="search-preview" class="search-preview hidden"></div>
+            <div id="search-autocomplete" class="search-autocomplete hidden"></div>
+        </div>
+
+        <!-- Shortcuts (folders + items) -->
+        <div id="shortcuts-container" class="shortcuts-container">
+            <div id="shortcuts-grid" class="shortcuts-grid"></div>
+        </div>
+
+        <!-- Widgets row -->
+        <div id="widgets-row" class="widgets-row">
+            <div id="widget-day-progress" class="widget widget-progress hidden">
+                <div class="progress-item">
+                    <span class="progress-label" data-i18n="day_progress"></span>
+                    <div class="progress-bar"><div id="day-progress-fill" class="progress-fill"></div></div>
+                    <span id="day-progress-pct" class="progress-pct"></span>
+                </div>
+                <div class="progress-item">
+                    <span class="progress-label" data-i18n="month_progress"></span>
+                    <div class="progress-bar"><div id="month-progress-fill" class="progress-fill"></div></div>
+                    <span id="month-progress-pct" class="progress-pct"></span>
+                </div>
+            </div>
+
+            <div id="widget-weather" class="widget widget-weather hidden">
+                <span id="weather-icon" class="weather-icon"></span>
+                <span id="weather-temp" class="weather-temp"></span>
+                <span id="weather-desc" class="weather-desc"></span>
+            </div>
+
+            <div id="widget-world-clocks" class="widget widget-world-clocks hidden"></div>
+            <div id="widget-countdowns" class="widget widget-countdowns hidden"></div>
+            <div id="widget-calendar" class="widget widget-calendar hidden"></div>
+
+            <div id="widget-notes" class="widget widget-notes hidden">
+                <textarea id="notes-textarea" class="notes-textarea" data-i18n-placeholder="notes_placeholder"></textarea>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings button -->
+    <button id="settings-btn" class="settings-btn" title="Settings">
+        <span class="nf">󰒓</span>
+    </button>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="settings-modal hidden">
+        <div class="settings-backdrop"></div>
+        <div class="settings-dialog">
+            <div class="settings-header">
+                <h2 data-i18n="settings">Settings</h2>
+                <button id="settings-close-btn" class="settings-close-btn">
+                    <span class="nf">󰅖</span>
+                </button>
+            </div>
+            <div class="settings-body">
+                <nav class="settings-nav">
+                    <button class="settings-tab active" data-tab="general">
+                        <span class="nf">󰒓</span>
+                        <span data-i18n="tab_general">General</span>
+                    </button>
+                    <button class="settings-tab" data-tab="appearance">
+                        <span class="nf">󰏘</span>
+                        <span data-i18n="tab_appearance">Appearance</span>
+                    </button>
+                    <button class="settings-tab" data-tab="background">
+                        <span class="nf">󰸉</span>
+                        <span data-i18n="tab_background">Background</span>
+                    </button>
+                    <button class="settings-tab" data-tab="shortcuts">
+                        <span class="nf">󰓹</span>
+                        <span data-i18n="tab_shortcuts">Shortcuts</span>
+                    </button>
+                    <button class="settings-tab" data-tab="widgets">
+                        <span class="nf">󰕮</span>
+                        <span data-i18n="tab_widgets">Widgets</span>
+                    </button>
+                    <button class="settings-tab" data-tab="search">
+                        <span class="nf">󰍉</span>
+                        <span data-i18n="tab_search">Search</span>
+                    </button>
+                    <button class="settings-tab" data-tab="sounds">
+                        <span class="nf">󰕾</span>
+                        <span data-i18n="tab_sounds">Sounds</span>
+                    </button>
+                    <button class="settings-tab" data-tab="hotkeys">
+                        <span class="nf">󰌌</span>
+                        <span data-i18n="tab_hotkeys">Hotkeys</span>
+                    </button>
+                    <button class="settings-tab" data-tab="data">
+                        <span class="nf">󰆓</span>
+                        <span data-i18n="tab_data">Data</span>
+                    </button>
+                    <button class="settings-tab" data-tab="about">
+                        <span class="nf">󰋽</span>
+                        <span data-i18n="tab_about">About</span>
+                    </button>
+                </nav>
+
+                <div class="settings-panels">
+                    <!-- General -->
+                    <div class="settings-panel active" data-panel="general">
+                        <div class="setting-group">
+                            <label data-i18n="language">Language</label>
+                            <select id="set-language" class="setting-select">
+                                <option value="auto" data-i18n="auto_detect">Auto-detect</option>
+                                <option value="en">English</option>
+                                <option value="ru">Русский</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="username">Your name</label>
+                            <input type="text" id="set-username" class="setting-input" data-i18n-placeholder="enter_name">
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="title_template">Tab title template</label>
+                            <input type="text" id="set-title-template" class="setting-input" placeholder="{time} — botyaranewtab">
+                            <small class="setting-hint" data-i18n="title_placeholders"></small>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="settings_button">Settings button</label>
+                            <select id="set-settings-btn-style" class="setting-select">
+                                <option value="icon_corner" data-i18n="settings_btn_icon_corner">Icon in corner</option>
+                                <option value="icon_text" data-i18n="settings_btn_icon_text">Icon with text</option>
+                                <option value="text_only" data-i18n="settings_btn_text_only">Text only</option>
+                                <option value="hidden" data-i18n="settings_btn_hidden">Hidden</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="settings_btn_position">Position</label>
+                            <select id="set-settings-btn-pos" class="setting-select">
+                                <option value="bottom-right">↘ Bottom right</option>
+                                <option value="bottom-left">↙ Bottom left</option>
+                                <option value="top-right">↗ Top right</option>
+                                <option value="top-left">↖ Top left</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-right-click">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="settings_right_click">Open on right-click</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-click-greeting">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="settings_click_greeting">Open by clicking greeting</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-in-search">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="settings_in_search">Icon in search bar</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-focus-mode">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="focus_mode">Focus mode</span>
+                            </label>
+                            <small class="setting-hint" data-i18n="focus_mode_desc"></small>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-zen-mode">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="zen_mode">Zen mode</span>
+                            </label>
+                            <small class="setting-hint" data-i18n="zen_mode_desc"></small>
+                        </div>
+                    </div>
+
+                    <!-- Appearance -->
+                    <div class="settings-panel" data-panel="appearance">
+                        <div class="setting-group">
+                            <label data-i18n="theme">Theme</label>
+                            <div id="theme-grid" class="theme-grid"></div>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="accent_color">Accent color</label>
+                            <div id="accent-palette" class="accent-palette"></div>
+                            <div class="color-picker-row">
+                                <div class="custom-color-input-wrap">
+                                    <input type="color" id="set-accent-color" class="custom-color-input" title="Pick custom color">
+                                    <div id="accent-color-swatch" class="accent-color-swatch"></div>
+                                </div>
+                                <input type="text" id="set-accent-color-hex" class="setting-input small mono" placeholder="#cba6f7">
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-auto-theme">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="auto_theme">Auto theme</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="font_family">Font</label>
+                            <select id="set-font-family" class="setting-select"></select>
+                            <div class="setting-row" style="margin-top: 8px;">
+                                <button id="btn-install-font" class="setting-btn small" data-i18n="install_font">Install font</button>
+                                <input type="file" id="input-install-font" accept=".woff2,.woff,.ttf,.otf" style="display:none">
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="font_size">Font size</label>
+                            <div class="font-sizes-grid">
+                                <div class="font-size-item">
+                                    <small data-i18n="font_size_global">Global</small>
+                                    <input type="range" id="set-font-global" min="12" max="24" value="16" class="custom-range">
+                                    <span id="val-font-global">16</span>px
+                                </div>
+                                <div class="font-size-item">
+                                    <small data-i18n="font_size_clock">Clock</small>
+                                    <input type="range" id="set-font-clock" min="32" max="144" value="72" class="custom-range">
+                                    <span id="val-font-clock">72</span>px
+                                </div>
+                                <div class="font-size-item">
+                                    <small data-i18n="font_size_greeting">Greeting</small>
+                                    <input type="range" id="set-font-greeting" min="14" max="48" value="24" class="custom-range">
+                                    <span id="val-font-greeting">24</span>px
+                                </div>
+                                <div class="font-size-item">
+                                    <small data-i18n="font_size_shortcuts">Shortcuts</small>
+                                    <input type="range" id="set-font-shortcuts" min="10" max="20" value="13" class="custom-range">
+                                    <span id="val-font-shortcuts">13</span>px
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="border_radius">Corner radius</label>
+                            <input type="range" id="set-border-radius" min="0" max="32" value="12" class="custom-range">
+                            <span id="val-border-radius">12</span>px
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="element_opacity">Element opacity</label>
+                            <input type="range" id="set-opacity" min="0.3" max="1" step="0.05" value="0.85" class="custom-range">
+                            <span id="val-opacity">85</span>%
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="backdrop_blur">Backdrop blur</label>
+                            <input type="range" id="set-backdrop-blur" min="0" max="40" value="20" class="custom-range">
+                            <span id="val-backdrop-blur">20</span>px
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="layout">Layout</label>
+                            <div class="layout-options">
+                                <button class="layout-btn" data-layout="left">←</button>
+                                <button class="layout-btn active" data-layout="center">⊙</button>
+                                <button class="layout-btn" data-layout="right">→</button>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="animations">Animations</label>
+                            <select id="set-animation" class="setting-select">
+                                <option value="fade" data-i18n="animation_fade">Fade</option>
+                                <option value="slide" data-i18n="animation_slide">Slide</option>
+                                <option value="scale" data-i18n="animation_scale">Scale</option>
+                                <option value="none" data-i18n="animation_none">None</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-compact">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="compact_mode">Compact mode</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="custom_css">Custom CSS</label>
+                            <textarea id="set-custom-css" class="setting-textarea" rows="4" placeholder=".clock-time { color: red; }"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Background -->
+                    <div class="settings-panel" data-panel="background">
+                        <div class="setting-group">
+                            <label data-i18n="bg_source">Source</label>
+                            <div class="bg-source-options">
+                                <button class="bg-src-btn active" data-source="theme">
+                                    <span class="nf"></span>
+                                    <span data-i18n="bg_theme">Theme</span>
+                                </button>
+                                <button class="bg-src-btn" data-source="image">
+                                    <span class="nf">󰋩</span>
+                                    <span data-i18n="bg_image">Image</span>
+                                </button>
+                                <button class="bg-src-btn" data-source="gradient">
+                                    <span class="nf">󰔷</span>
+                                    <span data-i18n="bg_gradient">Gradient</span>
+                                </button>
+                                <button class="bg-src-btn" data-source="solid">
+                                    <span class="nf">󰏘</span>
+                                    <span data-i18n="bg_solid">Solid</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="bg-image-options" class="bg-sub-options hidden">
+                            <div class="setting-group">
+                                <button id="btn-upload-bg" class="setting-btn">
+                                    <span class="nf"></span>
+                                    <span data-i18n="bg_upload">Upload image</span>
+                                </button>
+                                <input type="file" id="input-upload-bg" accept="image/*" style="display:none">
+                            </div>
+                            <div id="bg-images-grid" class="bg-images-grid"></div>
+                            <div class="setting-group">
+                                <label data-i18n="bg_scale">Scale mode</label>
+                                <select id="set-bg-scale" class="setting-select">
+                                    <option value="cover" data-i18n="bg_cover">Cover</option>
+                                    <option value="contain" data-i18n="bg_contain">Contain</option>
+                                    <option value="stretch" data-i18n="bg_stretch">Stretch</option>
+                                    <option value="tile" data-i18n="bg_tile">Tile</option>
+                                    <option value="center" data-i18n="bg_center">Center</option>
+                                    <option value="fit-width" data-i18n="bg_fit_width">Fit width</option>
+                                    <option value="fit-height" data-i18n="bg_fit_height">Fit height</option>
+                                    <option value="fill-blur" data-i18n="bg_fill_blur">Fill (blur edges)</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label data-i18n="bg_position">Position</label>
+                                <div class="position-grid">
+                                    <button class="pos-btn" data-pos="top left">↖</button>
+                                    <button class="pos-btn" data-pos="top center">↑</button>
+                                    <button class="pos-btn" data-pos="top right">↗</button>
+                                    <button class="pos-btn" data-pos="center left">←</button>
+                                    <button class="pos-btn active" data-pos="center">⊙</button>
+                                    <button class="pos-btn" data-pos="center right">→</button>
+                                    <button class="pos-btn" data-pos="bottom left">↙</button>
+                                    <button class="pos-btn" data-pos="bottom center">↓</button>
+                                    <button class="pos-btn" data-pos="bottom right">↘</button>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-adaptive">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_adaptive">Adaptive color</span>
+                                </label>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-rotate">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_rotate">Rotate images</span>
+                                </label>
+                            </div>
+                            <div class="setting-group" id="bg-rotate-interval-group" style="display:none">
+                                <label data-i18n="bg_rotate_interval">Interval (min)</label>
+                                <input type="range" id="set-bg-rotate-interval" min="1" max="120" value="30" class="custom-range">
+                                <span id="val-bg-rotate-interval">30</span>
+                            </div>
+                        </div>
+
+                        <div id="bg-gradient-options" class="bg-sub-options hidden">
+                            <div class="setting-group">
+                                <label data-i18n="bg_gradient_from">From</label>
+                                <div class="custom-color-input-wrap">
+                                    <input type="color" id="set-bg-grad-from" class="custom-color-input" value="#1e1e2e">
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <label data-i18n="bg_gradient_to">To</label>
+                                <div class="custom-color-input-wrap">
+                                    <input type="color" id="set-bg-grad-to" class="custom-color-input" value="#313244">
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <label data-i18n="bg_gradient_angle">Angle</label>
+                                <input type="range" id="set-bg-grad-angle" min="0" max="360" value="135" class="custom-range">
+                                <span id="val-bg-grad-angle">135</span>°
+                            </div>
+                        </div>
+
+                        <div id="bg-solid-options" class="bg-sub-options hidden">
+                            <div class="setting-group">
+                                <div class="custom-color-input-wrap">
+                                    <input type="color" id="set-bg-solid-color" class="custom-color-input" value="#1e1e2e">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Effects -->
+                        <div class="setting-group">
+                            <label data-i18n="bg_effects">Effects</label>
+                            <div class="effects-grid">
+                                <div class="effect-item">
+                                    <small data-i18n="bg_blur">Blur</small>
+                                    <input type="range" id="set-bg-blur" min="0" max="30" value="0" class="custom-range">
+                                    <span id="val-bg-blur">0</span>px
+                                </div>
+                                <div class="effect-item">
+                                    <small data-i18n="bg_dim">Dim</small>
+                                    <input type="range" id="set-bg-dim" min="0" max="100" value="0" class="custom-range">
+                                    <span id="val-bg-dim">0</span>%
+                                </div>
+                                <div class="effect-item">
+                                    <small data-i18n="bg_brightness">Brightness</small>
+                                    <input type="range" id="set-bg-brightness" min="50" max="150" value="100" class="custom-range">
+                                    <span id="val-bg-brightness">100</span>%
+                                </div>
+                                <div class="effect-item">
+                                    <small data-i18n="bg_saturation">Saturation</small>
+                                    <input type="range" id="set-bg-saturation" min="0" max="200" value="100" class="custom-range">
+                                    <span id="val-bg-saturation">100</span>%
+                                </div>
+                                <div class="effect-item">
+                                    <small data-i18n="bg_sepia">Sepia</small>
+                                    <input type="range" id="set-bg-sepia" min="0" max="100" value="0" class="custom-range">
+                                    <span id="val-bg-sepia">0</span>%
+                                </div>
+                            </div>
+                            <div class="effects-toggles">
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-grayscale">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_grayscale">Grayscale</span>
+                                </label>
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-vignette">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_vignette">Vignette</span>
+                                </label>
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-parallax">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_parallax">Parallax</span>
+                                </label>
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-bg-ken-burns">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="bg_ken_burns">Ken Burns</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="setting-group">
+                            <label data-i18n="bg_preview">Preview</label>
+                            <div class="bg-preview-container">
+                                <div id="bg-preview" class="bg-preview ratio-16-9"></div>
+                                <div class="bg-preview-ratios">
+                                    <button class="ratio-btn active" data-ratio="16:9">16:9</button>
+                                    <button class="ratio-btn" data-ratio="4:3">4:3</button>
+                                    <button class="ratio-btn" data-ratio="21:9">21:9</button>
+                                    <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shortcuts -->
+                    <div class="settings-panel" data-panel="shortcuts">
+                        <div class="setting-group">
+                            <button id="add-shortcut-btn-settings" class="setting-btn primary">
+                                <span class="nf"></span>
+                                <span data-i18n="add_shortcut">Add shortcut</span>
+                            </button>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="shortcuts_size">Icon size</label>
+                            <select id="set-shortcuts-size" class="setting-select">
+                                <option value="small" data-i18n="shortcuts_size_small">Small</option>
+                                <option value="medium" data-i18n="shortcuts_size_medium">Medium</option>
+                                <option value="large" data-i18n="shortcuts_size_large">Large</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-shortcuts-labels" checked>
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="shortcuts_show_labels">Show labels</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="shortcuts_columns">Columns (0 = auto)</label>
+                            <input type="range" id="set-shortcuts-cols" min="0" max="12" value="0" class="custom-range">
+                            <span id="val-shortcuts-cols">auto</span>
+                        </div>
+                        <div class="setting-group">
+                            <label data-i18n="shortcuts">Shortcuts</label>
+                            <div id="settings-shortcuts-list" class="settings-shortcuts-list"></div>
+                        </div>
+                        <div class="setting-row">
+                            <button id="btn-import-bookmarks" class="setting-btn">
+                                <span class="nf"></span>
+                                <span data-i18n="shortcuts_import">Import</span>
+                            </button>
+                            <input type="file" id="input-import-bookmarks" accept=".html,.htm,.json" style="display:none">
+                            <a href="/api/shortcuts/export" class="setting-btn">
+                                <span class="nf"></span>
+                                <span data-i18n="shortcuts_export">Export</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Widgets -->
+                    <div id="panel-widgets" class="settings-panel" data-panel="widgets">
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-clock" checked>
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_clock">Clock</span>
+                            </label>
+                        </div>
+                        <div id="clock-settings" class="sub-settings">
+                            <div class="setting-group">
+                                <label data-i18n="clock_format">Time format</label>
+                                <select id="set-clock-format" class="setting-select">
+                                    <option value="24h" data-i18n="clock_format_24">24-hour (14:30)</option>
+                                    <option value="12h" data-i18n="clock_format_12">12-hour (2:30 PM)</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-toggle">
+                                    <input type="checkbox" id="set-clock-seconds">
+                                    <span class="toggle-slider"></span>
+                                    <span data-i18n="clock_show_seconds">Show seconds</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-greeting" checked>
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_greeting">Greeting</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-day-progress">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_day_progress">Day & Month progress</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-weather">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_weather">Weather</span>
+                            </label>
+                        </div>
+                        <div id="weather-settings" class="sub-settings hidden">
+                            <div class="setting-group">
+                                <label data-i18n="weather_city">City</label>
+                                <div class="setting-row">
+                                    <input type="text" id="set-weather-city" class="setting-input" placeholder="Moscow">
+                                    <button id="btn-weather-detect" class="setting-btn small" data-i18n="weather_auto_detect">Auto</button>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <select id="set-weather-units" class="setting-select">
+                                    <option value="celsius" data-i18n="weather_units_c">Celsius</option>
+                                    <option value="fahrenheit" data-i18n="weather_units_f">Fahrenheit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-notes">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_notes">Notes / Scratchpad</span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-countdowns">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_countdowns">Countdowns</span>
+                            </label>
+                        </div>
+                        <div id="countdowns-settings" class="sub-settings hidden">
+                            <div id="countdowns-list" class="countdowns-list"></div>
+                            <button id="btn-add-countdown" class="setting-btn small">
+                                <span class="nf"></span>
+                                <span data-i18n="countdown_add">Add</span>
+                            </button>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-world-clocks">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_world_clocks">World clocks</span>
+                            </label>
+                        </div>
+                        <div id="world-clocks-settings" class="sub-settings hidden">
+                            <div id="world-clocks-list" class="world-clocks-list"></div>
+                            <button id="btn-add-world-clock" class="setting-btn small">
+                                <span class="nf"></span>
+                                <span data-i18n="world_clock_add">Add</span>
+                            </button>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-toggle">
+                                <input type="checkbox" id="set-widget-calendar">
+                                <span class="toggle-slider"></span>
+                                <span data-i18n="widget_calendar">Calendar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="settings-panel" data-panel="search">
+                        <div class="setting-group">
+                            <label data-i18n="search_engine">Default search engine</label>
+                            <select id="set-search-engine" class="setting-select">
+                                <option value="google">Google</option>
+                                <option value="yandex">Yandex</option>
+                                <option value="duckduckgo">DuckDuckGo</option>
+                            </select>
+                        </div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-bangs" checked><span class="toggle-slider"></span><span data-i18n="search_bangs">Bang commands</span></label><small class="setting-hint" data-i18n="search_bangs_help"></small></div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-history" checked><span class="toggle-slider"></span><span data-i18n="search_history">Save history</span></label></div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-autocomplete" checked><span class="toggle-slider"></span><span data-i18n="search_autocomplete">Autocomplete</span></label></div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-calculator" checked><span class="toggle-slider"></span><span data-i18n="search_calculator">Inline calculator</span></label></div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-color" checked><span class="toggle-slider"></span><span data-i18n="search_color_preview">Color preview</span></label></div>
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-search-units" checked><span class="toggle-slider"></span><span data-i18n="search_unit_converter">Unit converter</span></label></div>
+                        <div class="setting-group"><button id="btn-clear-history" class="setting-btn danger" data-i18n="search_clear_history">Clear history</button></div>
+                    </div>
+
+                    <!-- Sounds -->
+                    <div class="settings-panel" data-panel="sounds">
+                        <div class="setting-group"><label class="setting-toggle"><input type="checkbox" id="set-sound-enabled"><span class="toggle-slider"></span><span data-i18n="sound_enabled">Enable sounds</span></label></div>
+                    </div>
+
+                    <!-- Hotkeys -->
+                    <div class="settings-panel" data-panel="hotkeys">
+                        <div class="hotkeys-list">
+                            <div class="hotkey-item"><kbd>/</kbd><span data-i18n="hotkey_search">Focus search</span></div>
+                            <div class="hotkey-item"><kbd>Esc</kbd><span data-i18n="hotkey_clear">Clear / Close</span></div>
+                            <div class="hotkey-item"><kbd>Ctrl+,</kbd><span data-i18n="hotkey_settings">Settings</span></div>
+                            <div class="hotkey-item"><kbd>Ctrl+K</kbd><span data-i18n="hotkey_palette">Command palette</span></div>
+                            <div class="hotkey-item"><kbd>Ctrl+1–9</kbd><span data-i18n="hotkey_shortcut_n">Open Nth shortcut</span></div>
+                            <div class="hotkey-item"><kbd>Ctrl+Shift+F</kbd><span data-i18n="hotkey_focus_mode">Focus mode</span></div>
+                            <div class="hotkey-item"><kbd>Ctrl+Shift+Z</kbd><span data-i18n="hotkey_zen_mode">Zen mode</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Data -->
+                    <div class="settings-panel" data-panel="data">
+                        <div class="setting-group"><a href="/api/backup/create" class="setting-btn"><span class="nf">󰆓</span> <span data-i18n="backup_db">Download backup</span></a></div>
+                        <div class="setting-group"><button id="btn-restore-backup" class="setting-btn"><span class="nf">󰁯</span> <span data-i18n="restore_db">Restore backup</span></button><input type="file" id="input-restore-backup" accept=".db" style="display:none"></div>
+                        <div class="setting-group"><a href="/api/settings/export" class="setting-btn"><span class="nf"></span> <span data-i18n="export_settings_json">Export settings</span></a></div>
+                        <div class="setting-group"><button id="btn-import-settings" class="setting-btn"><span class="nf"></span> <span data-i18n="import_settings_json">Import settings</span></button><input type="file" id="input-import-settings" accept=".json" style="display:none"></div>
+                        <div class="setting-group" style="margin-top: 32px;"><button id="btn-reset-all" class="setting-btn danger"><span class="nf">󰁯</span> <span data-i18n="reset_all">Reset all</span></button></div>
+                    </div>
+
+                    <!-- About -->
+                    <div class="settings-panel" data-panel="about">
+                        <div class="about-content">
+                            <div class="about-hero">
+                                <div class="about-logo">🌙</div>
+                                <h3>botyaranewtab</h3>
+                                <p class="about-subtitle" data-i18n="about_by">by dimasbotyara</p>
+                                <p class="about-version"><span data-i18n="about_version">Version</span> 0.1.0</p>
+                            </div>
+                            <a href="https://github.com/dimasbotyara/botyaranewtab" target="_blank" class="setting-btn primary about-github-btn">
+                                <span class="nf"></span> GitHub
+                            </a>
+                            <div class="about-section">
+                                <h4 data-i18n="about_setup_guide">Setup as new tab</h4>
+                                <p data-i18n="about_setup_text">Install the extension:</p>
+                                <a href="https://chromewebstore.google.com/detail/mmjbdbjnoablegbkcklggeknkfcjkjia" target="_blank" class="setting-btn small" data-i18n="about_setup_chrome">Custom New Tab URL (Chrome)</a>
+                                <code class="about-url">http://127.0.0.1:12121</code>
+                            </div>
+                            <div class="about-section">
+                                <h4 data-i18n="about_autostart">Autostart</h4>
+                                <p data-i18n="about_autostart_text">To start automatically:</p>
+                                <pre class="about-code"># Linux (systemd)
+[Unit]
+Description=botyaranewtab
+
+[Service]
+ExecStart=python /path/to/run.py
+Restart=always
+
+[Install]
+WantedBy=default.target</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- First run modal -->
+    <div id="first-run-modal" class="first-run-modal hidden">
+        <div class="first-run-backdrop"></div>
+        <div class="first-run-dialog">
+            <div class="first-run-logo">🌙</div>
+            <h2 data-i18n="welcome">Welcome to botyaranewtab!</h2>
+            <p data-i18n="whats_your_name">What's your name?</p>
+            <input type="text" id="first-run-name" class="setting-input" data-i18n-placeholder="enter_name" autofocus>
+            <div class="first-run-actions">
+                <button id="first-run-skip" class="setting-btn" data-i18n="skip">Skip</button>
+                <button id="first-run-go" class="setting-btn primary" data-i18n="lets_go">Let's go!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder overlay -->
+    <div id="folder-overlay" class="folder-overlay hidden">
+        <div class="folder-backdrop"></div>
+        <div class="folder-dialog">
+            <div class="folder-header">
+                <h3 id="folder-title"></h3>
+                <button id="folder-close-btn" class="settings-close-btn"><span class="nf">󰅖</span></button>
+            </div>
+            <div id="folder-grid" class="shortcuts-grid folder-grid"></div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Shortcut edit modal -->
+    <div id="shortcut-modal" class="shortcut-modal hidden">
+        <div class="shortcut-modal-backdrop"></div>
+        <div class="shortcut-modal-dialog">
+            <h3 id="shortcut-modal-title" data-i18n="add_shortcut">Add shortcut</h3>
+            <div class="setting-group"><label data-i18n="shortcut_url">URL</label><input type="text" id="shortcut-edit-url" class="setting-input" placeholder="https://example.com"></div>
+            <div class="setting-group"><label data-i18n="shortcut_title">Title</label><input type="text" id="shortcut-edit-title" class="setting-input" placeholder="Example"></div>
+            <div class="setting-group"><label data-i18n="shortcut_group">Group</label><input type="text" id="shortcut-edit-group" class="setting-input" placeholder=""></div>
+            <div class="setting-group">
+                <label data-i18n="shortcut_color">Color</label>
+                <div class="custom-color-input-wrap">
+                    <input type="color" id="shortcut-edit-color" class="custom-color-input" value="#cba6f7">
+                </div>
+            </div>
+            <div class="setting-group">
+                <label data-i18n="shortcut_icon">Custom icon</label>
+                <div class="setting-row">
+                    <button id="btn-shortcut-icon" class="setting-btn small" data-i18n="upload">Upload</button>
+                    <input type="file" id="input-shortcut-icon" accept="image/*" style="display:none">
+                    <span id="shortcut-icon-name"></span>
+                </div>
+            </div>
+            <div class="shortcut-modal-actions">
+                <button id="shortcut-modal-cancel" class="setting-btn" data-i18n="cancel">Cancel</button>
+                <button id="shortcut-modal-delete" class="setting-btn danger hidden" data-i18n="delete">Delete</button>
+                <button id="shortcut-modal-save" class="setting-btn primary" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+    <style id="custom-css-style"></style>
+    <style id="dynamic-font-style"></style>
+
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/themes.js"></script>
+    <script src="/static/js/confetti.js"></script>
+    <script src="/static/js/background.js"></script>
+    <script src="/static/js/search.js"></script>
+    <script src="/static/js/shortcuts.js"></script>
+    <script src="/static/js/widgets.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/hotkeys.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
