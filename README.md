@@ -9,12 +9,15 @@ No cloud. No telemetry. No accounts. Just you and your data.
 
 🇬🇧 **English** · [🇷🇺 Русский](README.ru.md)
 
-![Python](https://img.shields.io/badge/python-3.10+-3776AB?logo=python&logoColor=white)
+![Python CI](https://github.com/dimasbotyara/botyaranewtab/actions/workflows/python-app.yml/badge.svg)
+![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
+![Type](https://img.shields.io/badge/type-Local--First-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-purple.svg)
 ![Flask](https://img.shields.io/badge/flask-3.1-000000?logo=flask&logoColor=white)
 ![SQLite](https://img.shields.io/badge/sqlite-3-003B57?logo=sqlite&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey)
-![Status](https://img.shields.io/badge/status-active-success)
 
 </div>
 

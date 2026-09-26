@@ -7,6 +7,7 @@ from rich import box
 
 from config import HOST, PORT
 from database import init_db
+from app import app
 
 console = Console()
 
@@ -60,5 +61,4 @@ def main():
 
 
 if __name__ == "__main__":
-    from app import app
     main()
