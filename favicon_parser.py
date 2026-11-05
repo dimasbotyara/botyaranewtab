@@ -11,6 +11,9 @@ from rich.console import Console
 
 console = Console()
 
+PAGE_MAX_BYTES = 2 * 1024 * 1024    # 2 MB of HTML is more than enough for <head>
+ICON_MAX_BYTES = 5 * 1024 * 1024    # icons should be tiny; refuse anything bigger
+
 
 def get_favicon(url: str) -> str | None:
     """
@@ -39,7 +42,7 @@ def get_favicon(url: str) -> str | None:
             resp = requests.get(url, timeout=5, headers={
                 "User-Agent": "Mozilla/5.0 (compatible; botyaranewtab/1.0)"
             })
-            if resp.status_code == 200:
+            if resp.status_code == 200 and len(resp.content) <= PAGE_MAX_BYTES:
                 soup = BeautifulSoup(resp.text, "html.parser")
                 icon_url = _find_best_icon(soup, url)
         except Exception as e:
@@ -59,7 +62,7 @@ def get_favicon(url: str) -> str | None:
                 icon_resp = requests.get(icon_url, timeout=5, headers={
                     "User-Agent": "Mozilla/5.0 (compatible; botyaranewtab/1.0)"
                 })
-                if icon_resp.status_code == 200 and len(icon_resp.content) > 0:
+                if icon_resp.status_code == 200 and 0 < len(icon_resp.content) <= ICON_MAX_BYTES:
                     content_type = icon_resp.headers.get("content-type", "")
                     if "svg" in content_type:
                         ext = ".svg"

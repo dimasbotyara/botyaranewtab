@@ -8,9 +8,12 @@ const App = {
         try {
             const resp = await fetch('/api/settings');
             this.settings = await resp.json();
+            const vResp = await fetch('/api/settings/version');
+            this.lastSyncAt = (await vResp.json()).version || 0;
         } catch (e) {
             console.error('Failed to load settings from server, using fallback', e);
             this.settings = {};
+            this.lastSyncAt = 0;
         }
 
         // 2. Init UI Modules
@@ -33,8 +36,9 @@ const App = {
             this.showFirstRunModal();
         }
 
-        // 5. Connect SSE for real-time live sync between tabs
-        this.initSSE();
+        // 5. Cross-tab sync: poll the settings version instead of holding
+        //    a server thread per tab (SSE starved the WSGI thread pool)
+        this.initSync();
 
         // 6. Service worker registration
         if ('serviceWorker' in navigator && this.settings.pwa_enabled !== false) {
@@ -127,11 +131,17 @@ const App = {
         if (sync) {
             clearTimeout(this.saveTimers[key]);
             this.saveTimers[key] = setTimeout(() => {
+                delete this.saveTimers[key];
                 fetch('/api/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ [key]: value })
-                }).catch(() => {});
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.updated_at) this.lastSyncAt = data.updated_at;
+                    })
+                    .catch(() => {});
             }, 250);
         }
     },
@@ -228,18 +238,42 @@ const App = {
         };
     },
 
-    initSSE() {
-        if (!window.EventSource) return;
-        const evtSource = new EventSource('/api/events');
-        evtSource.onmessage = (e) => {
-            try {
-                const msg = JSON.parse(e.data);
-                if (msg.type === 'settings_updated') {
-                    Object.assign(this.settings, msg.data);
-                    this.applySettings(this.settings);
+    initSync() {
+        if (this.settings.websocket_sync === false) return;
+        setInterval(() => this.syncSettings(), 2000);
+    },
+
+    async syncSettings() {
+        if (this._syncInFlight) return;
+        this._syncInFlight = true;
+        try {
+            const vResp = await fetch('/api/settings/version');
+            const { version } = await vResp.json();
+            if (!version || version === this.lastSyncAt) return;
+
+            const sResp = await fetch('/api/settings');
+            const remote = await sResp.json();
+            this.lastSyncAt = version;
+
+            // Merge remote changes, but never clobber keys that have a
+            // local save still pending in a debounce timer
+            let changed = false;
+            for (const [k, v] of Object.entries(remote)) {
+                if (this.saveTimers[k]) continue;
+                if (JSON.stringify(this.settings[k]) !== JSON.stringify(v)) {
+                    this.settings[k] = v;
+                    changed = true;
                 }
-            } catch (err) {}
-        };
+            }
+            if (changed) {
+                this.applySettings(this.settings);
+                Search.updatePlaceholder();
+            }
+        } catch (e) {
+            // Server unreachable — retry on the next tick
+        } finally {
+            this._syncInFlight = false;
+        }
     }
 };
 

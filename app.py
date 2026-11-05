@@ -4,42 +4,55 @@ import os
 import json
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import (
     Flask, render_template, jsonify, request,
     send_from_directory, Response
 )
 from werkzeug.utils import secure_filename
+from PIL import Image
 from rich.console import Console
 
 from config import (
     ICONS_DIR, BACKGROUNDS_DIR, BACKUPS_DIR, CUSTOM_FONTS_DIR
 )
 from database import (
-    init_db, get_db, get_all_settings, bulk_update_settings, get_default_settings
+    init_db, get_db, get_all_settings, bulk_update_settings, get_default_settings,
+    get_settings_version
 )
 from greetings import get_greeting, get_all_greetings, get_time_period
 from search_engine import parse_query, get_engines_list, get_bangs_list
 from favicon_parser import get_favicon
 from color_extractor import extract_colors
-from weather import get_weather, geocode_city
+from weather import get_weather, geocode_city, reverse_geocode
 from translations import TRANSLATIONS
 from utils import create_backup, restore_backup, get_available_fonts
-from weather import get_weather, geocode_city, reverse_geocode
 
 console = Console()
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB
 
-# SSE Broadcast queue
-sse_clients = []
+SEARCH_HISTORY_LIMIT = 500
+ALLOWED_BG_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
+ALLOWED_ICON_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico"}
 
 
-def broadcast(event_type: str, data: dict = None):
-    msg = {"type": event_type, "data": data or {}}
-    for q in sse_clients:
-        q.append(msg)
+def verify_image(file_storage, allowed_extensions: set) -> bool:
+    """Validate that an uploaded file is a real image of an allowed type."""
+    filename = (file_storage.filename or "").lower()
+    ext = os.path.splitext(filename)[1]
+    if ext not in allowed_extensions:
+        return False
+    try:
+        file_storage.stream.seek(0)
+        img = Image.open(file_storage.stream)
+        img.verify()
+        file_storage.stream.seek(0)
+        return True
+    except Exception:
+        return False
 
 
 # ─── Pages ──────────────────────────────────────────────
@@ -61,16 +74,20 @@ def api_get_settings():
 def api_update_settings():
     data = request.get_json(force=True)
     if data:
-        bulk_update_settings(data)
-        broadcast("settings_updated", data)
+        updated_at = bulk_update_settings(data)
+        return jsonify({"ok": True, "updated_at": updated_at})
     return jsonify({"ok": True})
+
+
+@app.route("/api/settings/version")
+def api_settings_version():
+    return jsonify({"version": get_settings_version()})
 
 
 @app.route("/api/settings/reset", methods=["POST"])
 def api_reset_settings():
     defaults = get_default_settings()
     bulk_update_settings(defaults)
-    broadcast("settings_updated", defaults)
     return jsonify({"ok": True, "settings": defaults})
 
 
@@ -131,6 +148,12 @@ def api_add_search_history():
     conn.execute(
         "INSERT INTO search_history (query, engine, searched_at) VALUES (?, ?, ?)",
         (data.get("query", ""), data.get("engine", ""), time.time())
+    )
+    # Rotate: keep only the newest N entries
+    conn.execute(
+        f"""DELETE FROM search_history WHERE id NOT IN (
+                SELECT id FROM search_history ORDER BY searched_at DESC LIMIT {SEARCH_HISTORY_LIMIT}
+            )"""
     )
     conn.commit()
     conn.close()
@@ -261,6 +284,9 @@ def api_upload_shortcut_icon():
         return jsonify({"error": "No file"}), 400
 
     f = request.files["file"]
+    if not verify_image(f, ALLOWED_ICON_EXTENSIONS):
+        return jsonify({"error": "Invalid image file"}), 400
+
     filename = f"{uuid.uuid4().hex[:12]}_{secure_filename(f.filename)}"
     save_path = os.path.join(ICONS_DIR, filename)
     f.save(save_path)
@@ -289,30 +315,40 @@ def api_import_shortcuts():
     content = f.read().decode("utf-8", errors="ignore")
 
     shortcuts = []
-    if f.filename.endswith(".json"):
-        shortcuts = json.loads(content)
-    elif f.filename.endswith((".html", ".htm")):
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(content, "html.parser")
-        for a in soup.find_all("a", href=True):
-            shortcuts.append({
-                "title": a.get_text(strip=True) or a["href"],
-                "url": a["href"],
-            })
+    try:
+        if f.filename.endswith(".json"):
+            shortcuts = json.loads(content)
+        elif f.filename.endswith((".html", ".htm")):
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(content, "html.parser")
+            for a in soup.find_all("a", href=True):
+                shortcuts.append({
+                    "title": a.get_text(strip=True) or a["href"],
+                    "url": a["href"],
+                })
+    except (json.JSONDecodeError, ValueError):
+        return jsonify({"error": "Could not parse file"}), 400
+
+    if not isinstance(shortcuts, list):
+        return jsonify({"error": "Could not parse file"}), 400
 
     conn = get_db()
     now = time.time()
     added = 0
-    for s in shortcuts:
-        url = s.get("url", "")
-        if not url or not url.startswith(("http://", "https://")):
-            continue
-        title = s.get("title", url)
-        icon_path = get_favicon(url)
+
+    valid = [
+        s for s in shortcuts
+        if isinstance(s, dict) and str(s.get("url", "")).startswith(("http://", "https://"))
+    ]
+    # Fetch favicons in parallel — sequential fetching makes large imports crawl
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        icons = list(pool.map(lambda s: get_favicon(s["url"]), valid))
+
+    for s, icon_path in zip(valid, icons):
         conn.execute(
             """INSERT INTO shortcuts (title, url, icon_path, group_name, position, clicks, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, 0, ?, ?)""",
-            (title, url, icon_path, s.get("group_name", ""), 0, now, now)
+            (s.get("title", s["url"]), s["url"], icon_path, s.get("group_name", ""), 0, now, now)
         )
         added += 1
     conn.commit()
@@ -337,6 +373,9 @@ def api_upload_background():
         return jsonify({"error": "No file"}), 400
 
     f = request.files["file"]
+    if not verify_image(f, ALLOWED_BG_EXTENSIONS):
+        return jsonify({"error": "Invalid image file"}), 400
+
     original = f.filename
     filename = f"{uuid.uuid4().hex[:12]}_{secure_filename(original)}"
     save_path = os.path.join(BACKGROUNDS_DIR, filename)
@@ -591,7 +630,6 @@ def api_import_settings():
 
     if data:
         bulk_update_settings(data)
-        broadcast("settings_updated", data)
         return jsonify({"ok": True})
     return jsonify({"error": "Invalid data"}), 400
 
@@ -616,25 +654,3 @@ def service_worker():
 @app.route("/manifest.json")
 def manifest():
     return send_from_directory("static", "manifest.json", mimetype="application/json")
-
-
-# ─── SSE for live sync ───────────────────────────────
-
-@app.route("/api/events")
-def sse():
-    def stream():
-        q = []
-        sse_clients.append(q)
-        try:
-            while True:
-                if q:
-                    msg = q.pop(0)
-                    yield f"data: {json.dumps(msg)}\n\n"
-                else:
-                    yield ": keepalive\n\n"
-                    time.sleep(1)
-        except GeneratorExit:
-            if q in sse_clients:
-                sse_clients.remove(q)
-
-    return Response(stream(), mimetype="text/event-stream")

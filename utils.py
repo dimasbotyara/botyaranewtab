@@ -4,12 +4,17 @@ import os
 import re
 import json
 import shutil
+import sqlite3
 import time
 from config import DB_PATH, BACKUPS_DIR, FONTS_DIR, CUSTOM_FONTS_DIR
 
 
 def create_backup() -> str:
     """Create a database backup. Returns filename."""
+    # Checkpoint the WAL so the copied file contains all committed data
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    conn.close()
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     filename = f"botyaranewtab_backup_{timestamp}.db"
     dest = os.path.join(BACKUPS_DIR, filename)
@@ -20,6 +25,11 @@ def create_backup() -> str:
 def restore_backup(backup_path: str) -> bool:
     """Restore database from backup."""
     try:
+        # Drop stale WAL/SHM files so they can't shadow the restored data
+        for suffix in ("", "-wal", "-shm"):
+            p = DB_PATH + suffix
+            if os.path.exists(p):
+                os.remove(p)
         shutil.copy2(backup_path, DB_PATH)
         return True
     except Exception:

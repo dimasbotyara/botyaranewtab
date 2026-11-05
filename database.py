@@ -275,3 +275,12 @@ def bulk_update_settings(data: dict):
         )
     conn.commit()
     conn.close()
+    return now
+
+
+def get_settings_version():
+    """Max updated_at across settings — used as a cheap sync token."""
+    conn = get_db()
+    row = conn.execute("SELECT MAX(updated_at) AS version FROM settings").fetchone()
+    conn.close()
+    return row["version"] or 0
