@@ -13,6 +13,7 @@
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-ffc857.svg)
 ![Type](https://img.shields.io/badge/type-Local--First-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
 ![Flask](https://img.shields.io/badge/flask-3.1-000000?logo=flask&logoColor=white)
@@ -265,6 +266,20 @@ PORT = 12121   # ← поменяй здесь
 BOTYARA_PORT=5555 python run.py
 ```
 
+| Переменная | Что делает |
+|---|---|
+| `BOTYARA_HOST` | Адрес, на котором слушает сервер (по умолчанию `127.0.0.1`) |
+| `BOTYARA_PORT` | Порт (по умолчанию `12121`) |
+| `BOTYARA_DATA_DIR` | Где хранить базу и файлы (по умолчанию — папка проекта) |
+| `BOTYARA_FRAME_ANCESTORS` | Кому можно встраивать страницу в iframe. По умолчанию `'none'` (запрещено). Например `*`, `'self'` или `'self' https://dash.example` |
+| `BOTYARA_ALLOWED_HOSTS` | Дополнительные имена, по которым открывается страница. API принимает запросы только с локальных адресов — если ты ходишь через обратный прокси или своё доменное имя в локальной сети, впиши его сюда (через запятую). `*` отключает проверку имени хоста совсем |
+
+Пример: сервер на другой машине в домашней сети, открываешь по имени `desk.lan`:
+
+```bash
+BOTYARA_HOST=0.0.0.0 BOTYARA_ALLOWED_HOSTS=desk.lan python run.py
+```
+
 ---
 
 ## 🔄 Автозапуск
@@ -510,7 +525,9 @@ botyaranewtab/
 │
 ├── static/
 │   ├── css/
-│   │   └── style.css       # Все стили
+│   │   ├── base.css        # Токены, сброс, утилиты
+│   │   ├── widgets.css     # Виджеты
+│   │   └── …               # 13 модулей, порядок важен
 │   ├── js/
 │   │   ├── app.js          # Главный контроллер, синхронизация
 │   │   ├── settings.js     # Логика модалки настроек
@@ -562,6 +579,17 @@ botyaranewtab/
 3. **Тестируй минимум в Chrome и Firefox**
 4. **Одна фича на PR** — легче ревьюить
 5. **Соблюдай существующий стиль** — модули, JSDoc-комментарии, `const` вместо `let`
+
+### Тесты
+
+```bash
+pip install -r requirements-dev.txt
+pytest            # весь набор, ~1 секунда
+```
+
+Тесты гоняются в CI на Python 3.10–3.12 (`.github/workflows/python-app.yml`) и используют
+временную папку данных, поэтому твою настоящую базу не трогают. Если добавляешь эндпоинт —
+добавь и тест рядом в `tests/`.
 
 Нашёл баг? [Открой issue](https://github.com/dimasbotyara/botyaranewtab/issues) с:
 - Что делал

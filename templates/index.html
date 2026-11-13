@@ -3,10 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="app-version" content="{{ version }}">
     <title>botyaranewtab</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Split stylesheet: cascade order matters, keep this order -->
+    <link rel="stylesheet" href="/static/css/fonts.css">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/controls.css">
+    <link rel="stylesheet" href="/static/css/background.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/clock.css">
+    <link rel="stylesheet" href="/static/css/search.css">
+    <link rel="stylesheet" href="/static/css/shortcuts.css">
+    <link rel="stylesheet" href="/static/css/widgets.css">
+    <link rel="stylesheet" href="/static/css/settings.css">
+    <link rel="stylesheet" href="/static/css/effects.css">
+    <link rel="stylesheet" href="/static/css/hotkeys.css">
+    <link rel="stylesheet" href="/static/css/utilities.css">
 </head>
 <body>
     <!-- Background layers -->
@@ -245,9 +259,9 @@
                         <div class="setting-group">
                             <label data-i18n="font_family">Font</label>
                             <select id="set-font-family" class="setting-select"></select>
-                            <div class="setting-row" style="margin-top: 8px;">
+                            <div class="setting-row mt-8">
                                 <button id="btn-install-font" class="setting-btn small" data-i18n="install_font">Install font</button>
-                                <input type="file" id="input-install-font" accept=".woff2,.woff,.ttf,.otf" style="display:none">
+                                <input type="file" id="input-install-font" accept=".woff2,.woff,.ttf,.otf" class="hidden-input">
                             </div>
                         </div>
                         <div class="setting-group">
@@ -350,7 +364,7 @@
                                     <span class="nf"></span>
                                     <span data-i18n="bg_upload">Upload image</span>
                                 </button>
-                                <input type="file" id="input-upload-bg" accept="image/*" style="display:none">
+                                <input type="file" id="input-upload-bg" accept="image/*" class="hidden-input">
                             </div>
                             <div id="bg-images-grid" class="bg-images-grid"></div>
                             <div class="setting-group">
@@ -394,7 +408,7 @@
                                     <span data-i18n="bg_rotate">Rotate images</span>
                                 </label>
                             </div>
-                            <div class="setting-group" id="bg-rotate-interval-group" style="display:none">
+                            <div class="setting-group hidden" id="bg-rotate-interval-group">
                                 <label data-i18n="bg_rotate_interval">Interval (min)</label>
                                 <input type="range" id="set-bg-rotate-interval" min="1" max="120" value="30" class="custom-range">
                                 <span id="val-bg-rotate-interval">30</span>
@@ -535,7 +549,7 @@
                                 <span class="nf"></span>
                                 <span data-i18n="shortcuts_import">Import</span>
                             </button>
-                            <input type="file" id="input-import-bookmarks" accept=".html,.htm,.json" style="display:none">
+                            <input type="file" id="input-import-bookmarks" accept=".html,.htm,.json" class="hidden-input">
                             <a href="/api/shortcuts/export" class="setting-btn">
                                 <span class="nf"></span>
                                 <span data-i18n="shortcuts_export">Export</span>
@@ -688,10 +702,10 @@
                     <!-- Data -->
                     <div class="settings-panel" data-panel="data">
                         <div class="setting-group"><a href="/api/backup/create" class="setting-btn"><span class="nf">󰆓</span> <span data-i18n="backup_db">Download backup</span></a></div>
-                        <div class="setting-group"><button id="btn-restore-backup" class="setting-btn"><span class="nf">󰁯</span> <span data-i18n="restore_db">Restore backup</span></button><input type="file" id="input-restore-backup" accept=".db" style="display:none"></div>
+                        <div class="setting-group"><button id="btn-restore-backup" class="setting-btn"><span class="nf">󰁯</span> <span data-i18n="restore_db">Restore backup</span></button><input type="file" id="input-restore-backup" accept=".db" class="hidden-input"></div>
                         <div class="setting-group"><a href="/api/settings/export" class="setting-btn"><span class="nf"></span> <span data-i18n="export_settings_json">Export settings</span></a></div>
-                        <div class="setting-group"><button id="btn-import-settings" class="setting-btn"><span class="nf"></span> <span data-i18n="import_settings_json">Import settings</span></button><input type="file" id="input-import-settings" accept=".json" style="display:none"></div>
-                        <div class="setting-group" style="margin-top: 32px;"><button id="btn-reset-all" class="setting-btn danger"><span class="nf">󰁯</span> <span data-i18n="reset_all">Reset all</span></button></div>
+                        <div class="setting-group"><button id="btn-import-settings" class="setting-btn"><span class="nf"></span> <span data-i18n="import_settings_json">Import settings</span></button><input type="file" id="input-import-settings" accept=".json" class="hidden-input"></div>
+                        <div class="setting-group mt-32"><button id="btn-reset-all" class="setting-btn danger"><span class="nf">󰁯</span> <span data-i18n="reset_all">Reset all</span></button></div>
                     </div>
 
                     <!-- About -->
@@ -701,7 +715,7 @@
                                 <div class="about-logo">🌙</div>
                                 <h3>botyaranewtab</h3>
                                 <p class="about-subtitle" data-i18n="about_by">by dimasbotyara</p>
-                                <p class="about-version"><span data-i18n="about_version">Version</span> 0.1.0</p>
+                                <p class="about-version"><span data-i18n="about_version">Version</span> {{ version }}</p>
                             </div>
                             <a href="https://github.com/dimasbotyara/botyaranewtab" target="_blank" class="setting-btn primary about-github-btn">
                                 <span class="nf"></span> GitHub
@@ -781,7 +795,7 @@ WantedBy=default.target</pre>
                 <label data-i18n="shortcut_icon">Custom icon</label>
                 <div class="setting-row">
                     <button id="btn-shortcut-icon" class="setting-btn small" data-i18n="upload">Upload</button>
-                    <input type="file" id="input-shortcut-icon" accept="image/*" style="display:none">
+                    <input type="file" id="input-shortcut-icon" accept="image/*" class="hidden-input">
                     <span id="shortcut-icon-name"></span>
                 </div>
             </div>
@@ -794,9 +808,11 @@ WantedBy=default.target</pre>
     </div>
 
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
-    <style id="custom-css-style"></style>
-    <style id="dynamic-font-style"></style>
+    <!-- User styles are real stylesheets: keeps CSP free of 'unsafe-inline' -->
+    <link rel="stylesheet" id="custom-fonts-css" href="/api/fonts/custom.css">
+    <link rel="stylesheet" id="custom-css-link" href="/api/custom.css">
 
+    <script src="/static/js/utils.js"></script>
     <script src="/static/js/toast.js"></script>
     <script src="/static/js/i18n.js"></script>
     <script src="/static/js/themes.js"></script>

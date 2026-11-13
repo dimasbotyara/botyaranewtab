@@ -1,0 +1,637 @@
+/* ==========================================================================
+ *  botyaranewtab · settings
+ *  Settings panel/button, dialogs, form rows, themes, about
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── Settings Button (floating) ────────────────────────────────────────── */
+.settings-btn {
+    position: fixed;
+    z-index: 10;
+    background: rgba(49, 50, 68, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
+
+.settings-btn.pos-bottom-right {
+    bottom: 24px;
+    right: 24px;
+}
+
+.settings-btn.pos-bottom-left {
+    bottom: 24px;
+    left: 24px;
+}
+
+.settings-btn.pos-top-right {
+    top: 24px;
+    right: 24px;
+}
+
+.settings-btn.pos-top-left {
+    top: 24px;
+    left: 24px;
+}
+
+/* ─── Settings / Shortcut / First-Run Modals ────────────────────────────── */
+.settings-modal,
+.shortcut-modal,
+.first-run-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.settings-modal.open,
+.shortcut-modal.open,
+.first-run-modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.settings-backdrop,
+.shortcut-modal-backdrop,
+.first-run-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+}
+
+.settings-dialog {
+    position: relative;
+    z-index: 10;
+    width: 90vw;
+    max-width: 880px;
+    height: 80vh;
+    max-height: 700px;
+    background: rgba(30, 30, 46, 0.97);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.settings-modal.open .settings-dialog {
+    transform: scale(1);
+}
+
+.settings-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.settings-header h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.settings-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 4px 8px;
+    transition: color 0.15s;
+}
+
+.settings-close-btn:hover {
+    color: var(--danger);
+}
+
+.settings-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.settings-nav {
+    width: 200px;
+    border-right: 1px solid var(--border);
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.settings-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+
+.settings-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.settings-tab.active {
+    background: rgba(203, 166, 247, 0.15);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.settings-panels {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.settings-panel {
+    display: none;
+}
+
+.settings-panel.active {
+    display: block;
+    animation: fadeIn 0.15s ease-out;
+}
+
+/* ─── Setting Form Elements ─────────────────────────────────────────────── */
+.setting-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-group > label:not(.setting-toggle) {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.setting-input,
+.setting-textarea {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.setting-input:focus,
+.setting-textarea:focus {
+    border-color: var(--accent);
+}
+
+.setting-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.setting-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.setting-btn.primary {
+    background: var(--accent);
+    color: #11111b;
+    font-weight: 600;
+    border-color: var(--accent);
+}
+
+.setting-btn.primary:hover {
+    opacity: 0.9;
+    color: #11111b;
+}
+
+.setting-btn.danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.setting-btn.danger:hover {
+    background: rgba(243, 139, 168, 0.15);
+}
+
+.setting-btn.small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.setting-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.setting-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sub-settings {
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    margin: 4px 0 12px;
+}
+
+/* ─── Font Sizes & Effects Grids ────────────────────────────────────────── */
+.font-sizes-grid,
+.effects-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.font-size-item,
+.effect-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.font-size-item small,
+.effect-item small {
+    width: 80px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.effects-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* ─── Position Grid & Layout Buttons ────────────────────────────────────── */
+.position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 40px);
+    gap: 6px;
+}
+
+.pos-btn,
+.layout-btn,
+.ratio-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.pos-btn.active,
+.layout-btn.active,
+.ratio-btn.active {
+    border-color: var(--accent);
+    background: rgba(203, 166, 247, 0.2);
+    color: var(--accent);
+}
+
+.layout-options {
+    display: flex;
+    gap: 8px;
+}
+
+/* ─── Theme Cards ───────────────────────────────────────────────────────── */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.theme-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    background: var(--bg-surface);
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.theme-card:hover,
+.theme-card.active {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.theme-card-preview {
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.theme-card-preview span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.theme-card-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ─── Background Preview & Thumbs ───────────────────────────────────────── */
+.bg-preview-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.bg-preview {
+    width: 260px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.bg-preview.ratio-16-9 { height: 146px; }
+.bg-preview.ratio-4-3  { height: 195px; }
+.bg-preview.ratio-21-9 { height: 111px; }
+.bg-preview.ratio-1-1  { height: 260px; }
+
+.bg-preview-ratios {
+    display: flex;
+    gap: 6px;
+}
+
+.bg-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.bg-thumb-item {
+    position: relative;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.bg-thumb-item.selected {
+    border-color: var(--accent);
+}
+
+.bg-thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bg-thumb-del {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--danger);
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.bg-thumb-item:hover .bg-thumb-del {
+    opacity: 1;
+}
+
+/* ─── Settings-side Shortcut List ───────────────────────────────────────── */
+.settings-shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-surface);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+}
+
+.sc-title {
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.sc-url {
+    color: var(--text-muted);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.widget-config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: var(--bg-surface);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+}
+
+/* ─── Shortcut Modal & First Run Dialog ─────────────────────────────────── */
+.shortcut-modal-dialog,
+.first-run-dialog {
+    position: relative;
+    z-index: 10;
+    width: 90vw;
+    max-width: 440px;
+    background: rgba(30, 30, 46, 0.98);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    padding: 24px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+}
+
+.shortcut-modal-actions,
+.first-run-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.first-run-dialog {
+    text-align: center;
+}
+
+.first-run-logo {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.first-run-dialog h2 {
+    margin-bottom: 8px;
+}
+
+.first-run-dialog p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* ─── About Section ─────────────────────────────────────────────────────── */
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.about-hero {
+    text-align: center;
+}
+
+.about-logo {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.about-hero h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.about-subtitle {
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.about-version {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
+.about-github-btn {
+    justify-content: center;
+    width: 100%;
+}
+
+.about-section {
+    background: var(--bg-surface);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.about-section h4 {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.about-section p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.about-url {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--bg-overlay);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-family: monospace;
+}
+
+.about-code {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg-overlay);
+    border-radius: 6px;
+    padding: 12px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.5;
+    margin-top: 8px;
+}

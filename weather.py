@@ -1,9 +1,9 @@
 """Weather via Open-Meteo (no API key needed)."""
 
-import requests
-from rich.console import Console
+from urllib.parse import quote, quote_plus
 
-console = Console()
+import requests
+from console_ui import console
 
 WMO_CODES = {
     0: ("clear", "☀️", "Ясно", "Clear"),
@@ -33,13 +33,19 @@ WMO_CODES = {
 }
 
 
+def _valid_coords(lat: float, lon: float) -> bool:
+    return -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0
+
+
 def get_weather(lat: float, lon: float, units: str = "celsius") -> dict | None:
     """Fetch current weather from Open-Meteo."""
+    if not _valid_coords(lat, lon):
+        return None
     try:
         temp_unit = "celsius" if units == "celsius" else "fahrenheit"
         url = (
             f"https://api.open-meteo.com/v1/forecast"
-            f"?latitude={lat}&longitude={lon}"
+            f"?latitude={quote(str(lat))}&longitude={quote(str(lon))}"
             f"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature"
             f"&temperature_unit={temp_unit}"
             f"&wind_speed_unit=kmh"
@@ -66,14 +72,17 @@ def get_weather(lat: float, lon: float, units: str = "celsius") -> dict | None:
             "unit": "°C" if units == "celsius" else "°F",
         }
     except Exception as e:
-        console.print(f"[red]Weather error: {e}[/red]")
+        console.print(f"[err]weather error: {e}[/err]")
         return None
 
 
 def geocode_city(city: str) -> dict | None:
     """Geocode a city name using Open-Meteo geocoding API."""
     try:
-        url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1&language=en"
+        url = (
+            "https://geocoding-api.open-meteo.com/v1/search"
+            f"?name={quote_plus(city)}&count=1&language=en"
+        )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
         data = resp.json()
@@ -89,13 +98,18 @@ def geocode_city(city: str) -> dict | None:
                 "timezone": r.get("timezone", ""),
             }
     except Exception as e:
-        console.print(f"[red]Geocode error: {e}[/red]")
+        console.print(f"[err]geocode error: {e}[/err]")
     return None
 
 def reverse_geocode(lat: float, lon: float) -> dict | None:
     """Reverse geocode coordinates → city name using Open-Meteo."""
+    if not _valid_coords(lat, lon):
+        return None
     try:
-        url = f"https://geocoding-api.open-meteo.com/v1/reverse?latitude={lat}&longitude={lon}&count=1&language=en"
+        url = (
+            "https://geocoding-api.open-meteo.com/v1/reverse"
+            f"?latitude={quote(str(lat))}&longitude={quote(str(lon))}&count=1&language=en"
+        )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
         data = resp.json()
@@ -108,5 +122,5 @@ def reverse_geocode(lat: float, lon: float) -> dict | None:
                 "timezone": r.get("timezone", ""),
             }
     except Exception as e:
-        console.print(f"[red]Reverse geocode error: {e}[/red]")
+        console.print(f"[err]reverse geocode error: {e}[/err]")
     return None

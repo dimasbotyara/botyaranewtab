@@ -97,11 +97,11 @@ const Search = {
             const result = await resp.json();
 
             if (result.type === 'calculator' && App.settings.search_calculator) {
-                this.showPreview(`<div class="preview-calc"><span class="preview-expr">${result.expression}</span> = <span class="preview-result">${result.result}</span></div>`);
+                this.showPreview(`<div class="preview-calc"><span class="preview-expr">${esc(result.expression)}</span> = <span class="preview-result">${esc(result.result)}</span></div>`);
             } else if (result.type === 'color' && App.settings.search_color_preview) {
-                this.showPreview(`<div class="preview-color"><div class="color-swatch" style="background:${result.color}"></div><span>${result.color}</span></div>`);
+                this.showPreview(`<div class="preview-color"><div class="color-swatch" data-bg="${safeColor(result.color)}"></div><span>${esc(result.color)}</span></div>`);
             } else if (result.type === 'conversion' && App.settings.search_unit_converter) {
-                this.showPreview(`<div class="preview-conv">${result.value} ${result.from_unit} = <strong>${result.result} ${result.to_unit}</strong></div>`);
+                this.showPreview(`<div class="preview-conv">${esc(result.value)} ${esc(result.from_unit)} = <strong>${esc(result.result)} ${esc(result.to_unit)}</strong></div>`);
             } else {
                 this.hidePreview();
             }
@@ -176,12 +176,16 @@ const Search = {
         this.input.blur();
     },
 
-    showPreview(html) { this.preview.innerHTML = html; this.preview.classList.remove('hidden'); },
+    showPreview(html) {
+        this.preview.innerHTML = html;
+        applyDynamicColors(this.preview);
+        this.preview.classList.remove('hidden');
+    },
     hidePreview() { this.preview.classList.add('hidden'); },
 
     showAutocomplete(items) {
         this.autocomplete.innerHTML = items.map((item, i) =>
-        `<div class="autocomplete-item${i === 0 ? ' selected' : ''}" data-query="${item}">${item}</div>`
+        `<div class="autocomplete-item${i === 0 ? ' selected' : ''}" data-query="${esc(item)}">${esc(item)}</div>`
         ).join('');
         this.autocomplete.classList.remove('hidden');
 
@@ -209,7 +213,15 @@ const Search = {
         this.input.value = next.dataset.query;
     },
 
-    isUrl(text) { return /^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d+)?(\/.*)?$/i.test(text); },
+    isUrl(text) {
+        const value = String(text || '').trim();
+        if (!value || /\s/.test(value)) return false;
+        if (/^https?:\/\/\S+$/i.test(value)) return true;
+        const host = value.split('/')[0].replace(/:\d{1,5}$/, '');
+        if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host)) return true;
+        if (host.toLowerCase() === 'localhost') return true;
+        return /^([\w-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/.test(value);
+    },
 
     async quickAdd() {
         const url = this.input.value.trim();

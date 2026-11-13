@@ -1,0 +1,101 @@
+/* ==========================================================================
+ *  botyaranewtab · fonts
+ *  Web fonts (@font-face declarations)
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── Fonts ─────────────────────────────────────────────────────────────── */
+@font-face {
+    font-family: 'Inter';
+    src: url('/static/fonts/Inter/inter-cyrillic-400-normal.woff2') format('woff2'),
+    url('/static/fonts/Inter/inter-latin-400-normal.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/static/fonts/Inter/inter-cyrillic-500-normal.woff2') format('woff2'),
+    url('/static/fonts/Inter/inter-latin-500-normal.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/static/fonts/Inter/inter-cyrillic-600-normal.woff2') format('woff2'),
+    url('/static/fonts/Inter/inter-latin-600-normal.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/static/fonts/Inter/inter-cyrillic-700-normal.woff2') format('woff2'),
+    url('/static/fonts/Inter/inter-latin-700-normal.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist';
+    src: url('/static/fonts/Geist/geist-sans-latin-400-normal.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist';
+    src: url('/static/fonts/Geist/geist-sans-latin-600-normal.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist';
+    src: url('/static/fonts/Geist/geist-sans-latin-700-normal.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope/manrope-cyrillic-400-normal.woff2') format('woff2'),
+    url('/static/fonts/Manrope/manrope-latin-400-normal.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope/manrope-cyrillic-600-normal.woff2') format('woff2'),
+    url('/static/fonts/Manrope/manrope-latin-600-normal.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope/manrope-cyrillic-700-normal.woff2') format('woff2'),
+    url('/static/fonts/Manrope/manrope-latin-700-normal.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SymbolsNerdFont';
+    src: url('/static/fonts/Symbols/SymbolsNerdFont-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-display: block;
+}
+
+.nf {
+    font-family: 'SymbolsNerdFont', monospace !important;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}

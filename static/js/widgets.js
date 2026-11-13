@@ -210,7 +210,7 @@ const Widgets = {
                 const diff = Math.ceil((target - now) / 86400000);
                 const label = diff >= 0 ? `${diff} ${I18n.t('days_left')}` : `${Math.abs(diff)} ${I18n.t('days_ago')}`;
 
-                return `<div class="countdown-item">${cd.emoji} <strong>${cd.title}</strong>: ${label}</div>`;
+                return `<div class="countdown-item">${esc(cd.emoji)} <strong>${esc(cd.title)}</strong>: ${esc(label)}</div>`;
             }).join('');
 
             container.innerHTML = html || `<div class="widget-empty">${I18n.t('no_results')}</div>`;
@@ -231,7 +231,7 @@ const Widgets = {
                 } catch (e) {
                     time = '??:??';
                 }
-                return `<div class="world-clock-item"><span class="wc-label">${wc.label}</span><span class="wc-time">${time}</span></div>`;
+                return `<div class="world-clock-item"><span class="wc-label">${esc(wc.label)}</span><span class="wc-time">${esc(time)}</span></div>`;
             }).join('');
 
             container.innerHTML = html || '';

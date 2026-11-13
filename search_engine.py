@@ -1,7 +1,11 @@
 """Search engine logic: bang commands, URL detection, calculator, units, colors."""
 
-import re
+import ast
+import ipaddress
 import math
+import operator
+import re
+from urllib.parse import quote_plus, urlparse
 
 SEARCH_ENGINES = {
     "google": "https://www.google.com/search?q={}",
@@ -54,6 +58,47 @@ UNIT_CONVERSIONS = {
     ("gb", "tb"): lambda x: x / 1024,
 }
 
+# ─── Calculator limits ──────────────────────────────────
+# Without these a query such as "9**9**9**9" pins a CPU core (and, with
+# waitress' four threads, takes the whole server down).
+MAX_EXPR_LEN = 100
+MAX_EXPONENT = 64
+MAX_DEPTH = 20
+MAX_ABS_RESULT = 1e18
+
+_BIN_OPS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+}
+
+_UNARY_OPS = {
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
+}
+
+_CONSTANTS = {"pi": math.pi, "e": math.e}
+
+_FUNCTIONS = {
+    "abs": (abs, 1, 1),
+    "round": (round, 1, 2),
+    "sqrt": (math.sqrt, 1, 1),
+    "log": (math.log, 1, 2),
+    "log10": (math.log10, 1, 1),
+    "sin": (math.sin, 1, 1),
+    "cos": (math.cos, 1, 1),
+    "tan": (math.tan, 1, 1),
+    "min": (min, 1, 8),
+    "max": (max, 1, 8),
+}
+
+# TLD must contain at least one letter: "1.5" is a number, not a host.
+_HOSTNAME_RE = re.compile(r"^(?:[\w-]+\.)+[a-zA-Z]{2,}$")
+_SCHEME_HOST_RE = re.compile(r"^[a-zA-Z][\w+.-]*://[^/\s]+")
+
 
 def parse_query(query: str, default_engine: str = "google"):
     query = query.strip()
@@ -74,29 +119,30 @@ def parse_query(query: str, default_engine: str = "google"):
         bang = parts[0].lower()
         search_text = parts[1] if len(parts) > 1 else ""
         if search_text:
-            url = BANG_COMMANDS[bang].format(search_text)
+            url = BANG_COMMANDS[bang].format(quote_plus(search_text))
             return {"type": "redirect", "url": url}
         return {"type": "empty"}
 
-    if is_url(query):
-        url = query if "://" in query else "https://" + query
-        return {"type": "redirect", "url": url}
-
+    # Calculator first: "1.5" and "2.0" are numbers, not domains.
     calc_result = try_calculate(query)
     if calc_result is not None:
         return {
             "type": "calculator",
             "expression": query,
             "result": calc_result,
-            "search_url": SEARCH_ENGINES.get(default_engine, SEARCH_ENGINES["google"]).format(query)
+            "search_url": search_url(query, default_engine),
         }
+
+    if is_url(query):
+        url = query if _SCHEME_HOST_RE.match(query) else "https://" + query
+        return {"type": "redirect", "url": url}
 
     color = try_parse_color(query)
     if color:
         return {
             "type": "color",
             "color": color,
-            "search_url": SEARCH_ENGINES.get(default_engine, SEARCH_ENGINES["google"]).format(query)
+            "search_url": search_url(query, default_engine),
         }
 
     conversion = try_convert_units(query)
@@ -104,48 +150,132 @@ def parse_query(query: str, default_engine: str = "google"):
         return {
             "type": "conversion",
             **conversion,
-            "search_url": SEARCH_ENGINES.get(default_engine, SEARCH_ENGINES["google"]).format(query)
+            "search_url": search_url(query, default_engine),
         }
 
-    url = SEARCH_ENGINES.get(default_engine, SEARCH_ENGINES["google"]).format(query)
-    return {"type": "redirect", "url": url}
+    return {"type": "redirect", "url": search_url(query, default_engine)}
+
+
+def search_url(query: str, engine: str = "google") -> str:
+    """Build a search URL with the query properly percent-encoded."""
+    template = SEARCH_ENGINES.get(engine, SEARCH_ENGINES["google"])
+    return template.format(quote_plus(query))
 
 
 def is_url(text: str) -> bool:
-    url_pattern = re.compile(
-        r'^(https?://)?'
-        r'([\w-]+\.)+[\w-]+'
-        r'(:\d+)?'
-        r'(/[\w\-.~:/?#\[\]@!$&\'()*+,;=]*)?$',
-        re.IGNORECASE
-    )
-    return bool(url_pattern.match(text))
+    """True for hostname[:port][/path] or an explicit http(s) URL."""
+    text = text.strip()
+    if not text or any(c.isspace() for c in text):
+        return False
+
+    if _SCHEME_HOST_RE.match(text):
+        parsed = urlparse(text)
+        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+    match = re.match(r"^([^/:]+)(?::\d{1,5})?(?:/[^\s]*)?$", text)
+    if not match:
+        return False
+
+    host = match.group(1)
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        pass
+
+    if host.lower() == "localhost":
+        return True
+    return bool(_HOSTNAME_RE.match(host))
 
 
 def try_calculate(expr: str):
-    safe = re.sub(r'[^0-9+\-*/().,%^ ]', '', expr)
-    if not safe or not any(c in safe for c in '+-*/%^'):
+    """Evaluate an arithmetic expression without eval().
+
+    Uses a whitelisted AST walk with hard limits on depth, exponent size and
+    the magnitude of intermediate values, so a malicious query cannot burn CPU.
+    """
+    expr = expr.strip()
+    if not expr or len(expr) > MAX_EXPR_LEN:
+        return None
+    if not any(c.isdigit() for c in expr):
+        return None
+    # Require an operator or a function call — a bare number stays a search
+    if not any(op in expr for op in "+-*/%^") and "(" not in expr:
         return None
 
-    safe = safe.replace('^', '**')
+    normalized = expr.replace("^", "**")
 
     try:
-        allowed_names = {
-            "abs": abs, "round": round, "min": min, "max": max,
-            "sqrt": math.sqrt, "pi": math.pi, "e": math.e,
-            "sin": math.sin, "cos": math.cos, "tan": math.tan,
-            "log": math.log, "log10": math.log10,
-        }
-        result = eval(safe, {"__builtins__": {}}, allowed_names)
-        if isinstance(result, (int, float)) and not math.isinf(result) and not math.isnan(result):
-            if isinstance(result, float) and result == int(result):
-                return str(int(result))
-            elif isinstance(result, float):
-                return f"{result:.10g}"
-            return str(result)
-    except Exception:
-        pass
-    return None
+        tree = ast.parse(normalized, mode="eval")
+        result = _eval_node(tree.body, 0)
+    except (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError,
+            RecursionError, MemoryError):
+        return None
+
+    if isinstance(result, complex) or isinstance(result, bool):
+        return None
+    if not isinstance(result, (int, float)):
+        return None
+    if isinstance(result, float) and (math.isnan(result) or math.isinf(result)):
+        return None
+    if abs(result) > MAX_ABS_RESULT:
+        return None
+
+    if isinstance(result, float) and result == int(result):
+        return str(int(result))
+    if isinstance(result, float):
+        return f"{result:.10g}"
+    return str(result)
+
+
+def _eval_node(node, depth: int):
+    if depth > MAX_DEPTH:
+        raise ValueError("expression too deep")
+
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+            return node.value
+        raise ValueError("unsupported constant")
+
+    if isinstance(node, ast.BinOp):
+        op = _BIN_OPS.get(type(node.op))
+        if op is None:
+            raise ValueError("unsupported operator")
+        left = _eval_node(node.left, depth + 1)
+        right = _eval_node(node.right, depth + 1)
+        if isinstance(node.op, ast.Pow):
+            if abs(right) > MAX_EXPONENT:
+                raise ValueError("exponent too large")
+            if abs(left) > MAX_ABS_RESULT:
+                raise ValueError("base too large")
+        value = op(left, right)
+        if isinstance(value, (int, float)) and abs(value) > MAX_ABS_RESULT * 10:
+            raise ValueError("result too large")
+        return value
+
+    if isinstance(node, ast.UnaryOp):
+        op = _UNARY_OPS.get(type(node.op))
+        if op is None:
+            raise ValueError("unsupported unary operator")
+        return op(_eval_node(node.operand, depth + 1))
+
+    if isinstance(node, ast.Name):
+        if node.id in _CONSTANTS:
+            return _CONSTANTS[node.id]
+        raise ValueError("unknown name")
+
+    if isinstance(node, ast.Call):
+        if not isinstance(node.func, ast.Name) or node.func.id not in _FUNCTIONS:
+            raise ValueError("unsupported function")
+        if node.keywords:
+            raise ValueError("keyword arguments not allowed")
+        func, min_args, max_args = _FUNCTIONS[node.func.id]
+        if not min_args <= len(node.args) <= max_args:
+            raise ValueError("bad arity")
+        args = [_eval_node(a, depth + 1) for a in node.args]
+        return func(*args)
+
+    raise ValueError("unsupported expression")
 
 
 def try_parse_color(text: str) -> str | None:
@@ -164,7 +294,10 @@ def try_convert_units(text: str) -> dict | None:
     if not match:
         return None
 
-    value = float(match.group(1))
+    try:
+        value = float(match.group(1))
+    except ValueError:
+        return None
     from_unit = match.group(2).lower()
     to_unit = match.group(3).lower()
 

@@ -1,6 +1,5 @@
 """Extract dominant color and palette from images using Pillow."""
 
-import os
 from PIL import Image
 from collections import Counter
 
@@ -37,7 +36,7 @@ def extract_colors(image_path: str, num_colors: int = 6) -> dict:
             "dominant": dominant,
             "palette": palette,
         }
-    except Exception as e:
+    except Exception:
         return {
             "dominant": "#1e1e2e",
             "palette": ["#1e1e2e"],

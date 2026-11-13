@@ -107,10 +107,15 @@ const App = {
         // Settings Button appearance & position
         this.updateSettingsButton(s);
 
-        // Custom CSS injection
-        const customStyle = document.getElementById('custom-css-style');
-        if (customStyle) {
-            customStyle.textContent = s.custom_css || '';
+        // Custom CSS arrives as a stylesheet (CSP: no inline <style>).
+        // Only touch the href when the content really changed, otherwise the
+        // browser would re-parse the sheet on every sync tick.
+        const customLink = document.getElementById('custom-css-link');
+        if (customLink) {
+            const href = `/api/custom.css?v=${hashString(s.custom_css || '')}`;
+            if (customLink.getAttribute('href') !== href) {
+                customLink.setAttribute('href', href);
+            }
         }
 
         // Focus & Zen modes
@@ -160,7 +165,6 @@ const App = {
             btn.classList.remove('hidden');
         }
 
-        const iconSpan = btn.querySelector('.nf');
         if (style === 'text_only') {
             btn.innerHTML = `<span data-i18n="settings">${I18n.t('settings')}</span>`;
         } else if (style === 'icon_text') {
@@ -239,7 +243,7 @@ const App = {
     },
 
     initSync() {
-        if (this.settings.websocket_sync === false) return;
+        if (this.settings.sync_enabled === false) return;
         setInterval(() => this.syncSettings(), 2000);
     },
 

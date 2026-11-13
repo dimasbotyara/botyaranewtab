@@ -159,9 +159,10 @@ const Settings = {
         const currentAccent = App.settings.accent_color || '#cba6f7';
 
         palette.innerHTML = Array.from(colors).map(c => `
-        <button class="accent-dot ${c === currentAccent ? 'active' : ''}" data-color="${c}"
-        style="background:${c}" title="${c}"></button>
+        <button class="accent-dot ${c === currentAccent ? 'active' : ''}" data-color="${esc(c)}"
+        data-bg="${safeColor(c)}" title="${esc(c)}"></button>
         `).join('');
+        applyDynamicColors(palette);
 
         palette.querySelectorAll('.accent-dot').forEach(dot => {
             dot.addEventListener('click', () => {
@@ -479,7 +480,16 @@ const Settings = {
         const fd = new FormData(); fd.append('file', file);
         const resp = await fetch('/api/fonts/install', { method: 'POST', body: fd });
         const data = await resp.json();
-        if (data.ok) { Toast.success(I18n.t('toast_font_installed')); this.loadFontsDropdown(data.name); App.updateSetting('font_family', data.name); }
+        if (data.ok) {
+            Toast.success(I18n.t('toast_font_installed'));
+            // New @font-face rule: reload the generated stylesheet so it exists
+            const link = document.getElementById('custom-fonts-css');
+            if (link) link.setAttribute('href', `/api/fonts/custom.css?v=${Date.now()}`);
+            this.loadFontsDropdown(data.name);
+            App.updateSetting('font_family', data.name);
+        } else {
+            Toast.error(data.error || I18n.t('toast_error'));
+        }
     },
 
     async loadBackgroundImages() {
@@ -489,9 +499,9 @@ const Settings = {
         Background.backgrounds = images;
         if (!images.length) { grid.innerHTML = `<div class="settings-hint">${I18n.t('bg_no_images')}</div>`; return; }
         grid.innerHTML = images.map(img => `
-        <div class="bg-thumb-item ${App.settings.bg_image_id === img.id ? 'selected' : ''}" data-id="${img.id}">
-        <img src="/static/backgrounds/${img.filename}" alt="${img.original_name || ''}">
-        <button class="bg-thumb-del" data-id="${img.id}">✕</button>
+        <div class="bg-thumb-item ${App.settings.bg_image_id === img.id ? 'selected' : ''}" data-id="${Number(img.id)}">
+        <img src="/static/backgrounds/${safeUrl(img.filename)}" alt="${esc(img.original_name || '')}">
+        <button class="bg-thumb-del" data-id="${Number(img.id)}">✕</button>
         </div>
         `).join('');
         grid.querySelectorAll('.bg-thumb-item').forEach(item => {
@@ -520,9 +530,9 @@ const Settings = {
         const resp = await fetch('/api/shortcuts'); const data = await resp.json();
         if (!data.length) { list.innerHTML = `<p class="settings-hint">${I18n.t('shortcuts_no_items')}</p>`; return; }
         list.innerHTML = data.map(sc => `
-        <div class="settings-shortcut-row"><span class="sc-title">${sc.title}</span><span class="sc-url">${sc.url}</span>
-        <div class="sc-actions"><button class="setting-btn small btn-sc-edit" data-id="${sc.id}">${I18n.t('edit')}</button>
-        <button class="setting-btn small danger btn-sc-del" data-id="${sc.id}">✕</button></div></div>
+        <div class="settings-shortcut-row"><span class="sc-title">${esc(sc.title)}</span><span class="sc-url">${esc(sc.url)}</span>
+        <div class="sc-actions"><button class="setting-btn small btn-sc-edit" data-id="${Number(sc.id)}">${esc(I18n.t('edit'))}</button>
+        <button class="setting-btn small danger btn-sc-del" data-id="${Number(sc.id)}">✕</button></div></div>
         `).join('');
         list.querySelectorAll('.btn-sc-edit').forEach(b => b.addEventListener('click', () => Shortcuts.openModal(parseInt(b.dataset.id))));
         list.querySelectorAll('.btn-sc-del').forEach(b => b.addEventListener('click', async () => {
@@ -537,14 +547,15 @@ const Settings = {
         const currentTheme = App.settings.theme || 'catppuccin-mocha';
         grid.innerHTML = Themes.getThemeList().map(t => `
         <div class="theme-card ${t.id === currentTheme ? 'active' : ''}" data-theme="${t.id}">
-        <div class="theme-card-preview" style="background:${t.colors['--bg-base']}">
-        <span style="background:${t.colors['--accent']}"></span>
-        <span style="background:${t.colors['--bg-surface']}"></span>
-        <span style="background:${t.colors['--text-primary']}"></span>
+        <div class="theme-card-preview" data-bg="${safeColor(t.colors['--bg-base'])}">
+        <span data-bg="${safeColor(t.colors['--accent'])}"></span>
+        <span data-bg="${safeColor(t.colors['--bg-surface'])}"></span>
+        <span data-bg="${safeColor(t.colors['--text-primary'])}"></span>
         </div>
         <div class="theme-card-name">${t.name}</div>
         </div>
         `).join('');
+        applyDynamicColors(grid);
         grid.querySelectorAll('.theme-card').forEach(card => {
             card.addEventListener('click', () => {
                 grid.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === card.dataset.theme));
@@ -560,20 +571,20 @@ const Settings = {
     async loadFontsDropdown(selectedFont) {
         const select = document.getElementById('set-font-family'); if (!select) return;
         const resp = await fetch('/api/fonts'); const fonts = await resp.json();
-        select.innerHTML = fonts.map(f => `<option value="${f.name}" ${f.name === selectedFont ? 'selected' : ''}>${f.name}${f.builtin ? '' : ' (Custom)'}</option>`).join('');
+        select.innerHTML = fonts.map(f => `<option value="${esc(f.name)}" ${f.name === selectedFont ? 'selected' : ''}>${esc(f.name)}${f.builtin ? '' : ' (Custom)'}</option>`).join('');
     },
 
     async loadWidgetSettings() {
         const cdContainer = document.getElementById('countdowns-list');
         if (cdContainer) {
             const resp = await fetch('/api/countdowns'); const cds = await resp.json();
-            cdContainer.innerHTML = cds.map(c => `<div class="widget-config-item"><span>${c.emoji} <strong>${c.title}</strong> (${c.target_date})</span><button class="setting-btn small danger btn-cd-del" data-id="${c.id}">✕</button></div>`).join('');
+            cdContainer.innerHTML = cds.map(c => `<div class="widget-config-item"><span>${esc(c.emoji)} <strong>${esc(c.title)}</strong> (${esc(c.target_date)})</span><button class="setting-btn small danger btn-cd-del" data-id="${Number(c.id)}">✕</button></div>`).join('');
             cdContainer.querySelectorAll('.btn-cd-del').forEach(b => b.addEventListener('click', async () => { await fetch(`/api/countdowns/${b.dataset.id}`, { method: 'DELETE' }); this.loadWidgetSettings(); Widgets.loadCountdowns(); }));
         }
         const wcContainer = document.getElementById('world-clocks-list');
         if (wcContainer) {
             const resp = await fetch('/api/world-clocks'); const wcs = await resp.json();
-            wcContainer.innerHTML = wcs.map(w => `<div class="widget-config-item"><span><strong>${w.label}</strong> (${w.timezone})</span><button class="setting-btn small danger btn-wc-del" data-id="${w.id}">✕</button></div>`).join('');
+            wcContainer.innerHTML = wcs.map(w => `<div class="widget-config-item"><span><strong>${esc(w.label)}</strong> (${esc(w.timezone)})</span><button class="setting-btn small danger btn-wc-del" data-id="${Number(w.id)}">✕</button></div>`).join('');
             wcContainer.querySelectorAll('.btn-wc-del').forEach(b => b.addEventListener('click', async () => { await fetch(`/api/world-clocks/${b.dataset.id}`, { method: 'DELETE' }); this.loadWidgetSettings(); Widgets.loadWorldClocks(); }));
         }
     },

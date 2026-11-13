@@ -1,0 +1,91 @@
+/* ==========================================================================
+ *  botyaranewtab · base
+ *  Design tokens, reset, scrollbar
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── CSS Variables ─────────────────────────────────────────────────────── */
+:root {
+    /* Colors (overridden by themes) */
+    --bg-base: #1e1e2e;
+    --bg-surface: #313244;
+    --bg-overlay: #45475a;
+    --text-primary: #cdd6f4;
+    --text-secondary: #a6adc8;
+    --text-muted: #6c7086;
+    --accent: #cba6f7;
+    --accent-hover: #b4befe;
+    --border: #585b70;
+    --danger: #f38ba8;
+    --success: #a6e3a1;
+
+    /* Typography */
+    --font-main: 'Inter', 'SymbolsNerdFont', system-ui, sans-serif;
+    --font-size-global: 16px;
+    --font-size-clock: 72px;
+    --font-size-greeting: 24px;
+    --font-size-shortcuts: 13px;
+
+    /* Shape & Motion */
+    --radius: 12px;
+    --element-opacity: 0.85;
+    --backdrop-blur: 20px;
+    --transition-speed: 0.2s;
+}
+
+/* ─── Base Reset ────────────────────────────────────────────────────────── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+    user-select: text;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: var(--font-size-global);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ─── Custom Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}

@@ -2,7 +2,6 @@
 
 import sqlite3
 import json
-import os
 import time
 from config import DB_PATH, DB_VERSION
 
@@ -107,12 +106,25 @@ def init_db():
         )
     """)
 
+    # ─── Migrations ────────────────────────────────────
+    # Must run before the defaults are inserted, otherwise the fresh default
+    # would win and the user's old value would be lost.
+    # ffc4e56 replaced SSE with polling: the old key name is now a lie.
+    c.execute("UPDATE OR IGNORE settings SET key = 'sync_enabled' WHERE key = 'websocket_sync'")
+    c.execute("DELETE FROM settings WHERE key = 'websocket_sync'")
+
     defaults = get_default_settings()
     for key, value in defaults.items():
         c.execute(
             "INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?, ?, ?)",
             (key, json.dumps(value), time.time())
         )
+
+    # Cheap indexes for the queries the page makes on every keystroke / load
+    c.execute("CREATE INDEX IF NOT EXISTS idx_search_history_time "
+              "ON search_history (searched_at DESC)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_shortcuts_order "
+              "ON shortcuts (group_name, position)")
 
     c.execute("INSERT OR IGNORE INTO notes (id, content, updated_at) VALUES (1, '', ?)", (time.time(),))
 
@@ -225,7 +237,7 @@ def get_default_settings():
 
         # Advanced
         "pwa_enabled": True,
-        "websocket_sync": True,
+        "sync_enabled": True,
         "custom_css": "",
     }
 

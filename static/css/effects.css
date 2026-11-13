@@ -1,0 +1,80 @@
+/* ==========================================================================
+ *  botyaranewtab · effects
+ *  Toasts, confetti, focus & zen modes
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── Toasts & Confetti ─────────────────────────────────────────────────── */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    background: rgba(49, 50, 68, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.toast-hide {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+}
+
+.toast-success {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.toast-error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.confetti-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    pointer-events: none;
+    display: none;
+}
+
+/* ─── Focus & Zen Modes ─────────────────────────────────────────────────── */
+body.mode-focus #shortcuts-container,
+body.mode-focus #widgets-row {
+    display: none !important;
+}
+
+body.mode-zen #shortcuts-container,
+body.mode-zen #search-container,
+body.mode-zen #widget-greeting,
+body.mode-zen #widgets-row {
+    display: none !important;
+}
+
+body.mode-zen .clock-time {
+    font-size: 3rem;
+    opacity: 0.7;
+}

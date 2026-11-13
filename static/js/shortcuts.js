@@ -73,19 +73,20 @@ const Shortcuts = {
         // Render folder icons
         for (const [groupName, items] of Object.entries(groups)) {
             const previewIcons = items.slice(0, 4);
+            const safeGroup = esc(groupName);
             html += `
-            <div class="shortcut-item shortcut-folder" data-group="${groupName}" title="${groupName} (${items.length})">
+            <div class="shortcut-item shortcut-folder" data-group="${safeGroup}" title="${safeGroup} (${items.length})">
             <div class="shortcut-icon folder-icon">
             <div class="folder-preview">
             ${previewIcons.map(sc => {
-                const iconSrc = sc.custom_icon_path || sc.icon_path;
+                const iconSrc = safeUrl(sc.custom_icon_path || sc.icon_path);
                 return iconSrc
                 ? `<img src="/static/${iconSrc}" alt="" class="folder-mini-icon">`
-                : `<div class="folder-mini-letter" style="background:${sc.color || 'var(--accent)'}">${(sc.title || '?')[0]}</div>`;
+                : `<div class="folder-mini-letter" data-bg="${safeColor(sc.color)}">${esc((sc.title || '?')[0])}</div>`;
             }).join('')}
             </div>
             </div>
-            ${showLabels ? `<span class="shortcut-label">${groupName}</span>` : ''}
+            ${showLabels ? `<span class="shortcut-label">${safeGroup}</span>` : ''}
             </div>
             `;
         }
@@ -96,6 +97,7 @@ const Shortcuts = {
         }
 
         this.grid.innerHTML = html;
+        applyDynamicColors(this.grid);
 
         // Folder click
         this.grid.querySelectorAll('.shortcut-folder').forEach(el => {
@@ -119,16 +121,21 @@ const Shortcuts = {
     },
 
     renderShortcutItem(sc, showLabels) {
-        const iconSrc = sc.custom_icon_path || sc.icon_path;
+        const iconSrc = safeUrl(sc.custom_icon_path || sc.icon_path);
         const iconHtml = iconSrc
         ? `<img src="/static/${iconSrc}" alt="" class="shortcut-icon-img" loading="lazy">`
-        : `<div class="shortcut-icon-letter" style="background:${sc.color || 'var(--accent)'}">${(sc.title || '?')[0].toUpperCase()}</div>`;
+        : `<div class="shortcut-icon-letter" data-bg="${safeColor(sc.color)}">${esc((sc.title || '?')[0].toUpperCase())}</div>`;
+
+        // href is validated server-side (http/https only) and escaped here
+        const href = /^https?:\/\//i.test(sc.url || '') ? esc(sc.url) : '#';
+        const label = esc(sc.title || '');
+        const titleAttr = `${label}${sc.clicks ? ` (${Number(sc.clicks)} ${esc(I18n.t('shortcuts_clicks'))})` : ''}`;
 
         return `
-        <a href="${sc.url}" class="shortcut-item" data-id="${sc.id}"
-        title="${sc.title}${sc.clicks ? ` (${sc.clicks} ${I18n.t('shortcuts_clicks')})` : ''}">
+        <a href="${href}" class="shortcut-item" data-id="${Number(sc.id)}"
+        title="${titleAttr}">
         <div class="shortcut-icon">${iconHtml}</div>
-        ${showLabels ? `<span class="shortcut-label">${sc.title}</span>` : ''}
+        ${showLabels ? `<span class="shortcut-label">${label}</span>` : ''}
         </a>
         `;
     },
@@ -142,6 +149,7 @@ const Shortcuts = {
         const showLabels = App.settings.shortcuts_show_labels !== false;
 
         grid.innerHTML = items.map(sc => this.renderShortcutItem(sc, showLabels)).join('');
+        applyDynamicColors(grid);
 
         // Click + context menu for items inside folder
         grid.querySelectorAll('.shortcut-item').forEach(el => {

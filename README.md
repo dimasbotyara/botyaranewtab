@@ -13,6 +13,7 @@ No cloud. No telemetry. No accounts. Just you and your data.
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-ffc857.svg)
 ![Type](https://img.shields.io/badge/type-Local--First-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
 ![Flask](https://img.shields.io/badge/flask-3.1-000000?logo=flask&logoColor=white)
@@ -265,6 +266,14 @@ You can override the host and port without touching `config.py`:
 BOTYARA_PORT=5555 python run.py
 ```
 
+| Variable | Purpose |
+|---|---|
+| `BOTYARA_HOST` | Bind address (default `127.0.0.1`) |
+| `BOTYARA_PORT` | Port (default `12121`) |
+| `BOTYARA_DATA_DIR` | Where the database and uploads live (default: project folder) |
+| `BOTYARA_FRAME_ANCESTORS` | Who may embed the page in an iframe. Defaults to `'none'` (denied); e.g. `*`, `'self'` or `'self' https://dash.example` |
+| `BOTYARA_ALLOWED_HOSTS` | Extra hostnames the page is served from. The API only accepts writes from local hosts — add your hostname here (comma separated) if you use a reverse proxy or a LAN name; `*` disables the host check |
+
 ---
 
 ## 🔄 Autostart
@@ -510,7 +519,9 @@ botyaranewtab/
 │
 ├── static/
 │   ├── css/
-│   │   └── style.css       # All styles
+│   │   ├── base.css        # Tokens, reset, utilities
+│   │   ├── widgets.css     # Widgets
+│   │   └── …               # 13 modules, order matters
 │   ├── js/
 │   │   ├── app.js          # Main controller, settings sync
 │   │   ├── settings.js     # Settings modal logic

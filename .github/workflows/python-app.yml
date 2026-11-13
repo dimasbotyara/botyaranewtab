@@ -24,10 +24,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pytest
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
 
+    # No fallback: if the suite does not run, the job must fail.
     - name: Run tests with pytest
-      run: |
-        # Если есть тесты — запускаем pytest, иначе проверяем простой импорт
-        pytest || python -c "print('No tests found, syntax check OK!')"
+      run: pytest -q
+
+    - name: Byte-compile check
+      run: python -m compileall -q . -x '(\.git|backups)'
+
+    - name: JS syntax check
+      run: for f in static/js/*.js; do node --check "$f"; done

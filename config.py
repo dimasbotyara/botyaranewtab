@@ -1,5 +1,8 @@
 """botyaranewtab configuration."""
 
+# Public version of the app (independent of DB_VERSION, which tracks schema).
+APP_VERSION = "0.2.0"
+
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -1,0 +1,79 @@
+/* ==========================================================================
+ *  botyaranewtab · layout
+ *  Main content container, layout modes, animations
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── Main Content ──────────────────────────────────────────────────────── */
+.main-content {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 960px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.layout-left {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.layout-center {
+    align-items: center;
+    text-align: center;
+}
+
+.layout-right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.compact-mode {
+    gap: 12px;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────── */
+.anim-fade {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.anim-slide {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.anim-scale {
+    animation: scaleUp 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

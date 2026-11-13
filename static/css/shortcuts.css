@@ -1,0 +1,193 @@
+/* ==========================================================================
+ *  botyaranewtab · shortcuts
+ *  Shortcut grid, folder icons and folder overlay
+ *
+ *  Part of the split stylesheet. The <link> order in templates/index.html
+ *  mirrors the original monolithic style.css — keep them in sync.
+ * ========================================================================== */
+
+/* ─── Shortcuts Grid ────────────────────────────────────────────────────── */
+.shortcuts-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.shortcuts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.shortcut-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-primary);
+    background: rgba(49, 50, 68, var(--element-opacity));
+    backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    width: 80px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s, box-shadow 0.15s;
+}
+
+.shortcut-item:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.shortcut-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shortcut-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.shortcut-icon-letter {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #11111b;
+    font-size: 1rem;
+}
+
+.shortcut-label {
+    font-size: var(--font-size-shortcuts);
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+}
+
+.shortcuts-grid.size-small .shortcut-item {
+    width: 64px;
+    padding: 8px;
+}
+
+.shortcuts-grid.size-small .shortcut-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.shortcuts-grid.size-large .shortcut-item {
+    width: 100px;
+    padding: 16px;
+}
+
+.shortcuts-grid.size-large .shortcut-icon {
+    width: 48px;
+    height: 48px;
+}
+
+/* ─── Folder Icon (mini preview) ────────────────────────────────────────── */
+.folder-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.folder-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+}
+
+.folder-mini-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.folder-mini-letter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    font-weight: bold;
+    color: #11111b;
+    border-radius: 3px;
+}
+
+/* ─── Folder Overlay ────────────────────────────────────────────────────── */
+.folder-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.folder-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.folder-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+}
+
+.folder-dialog {
+    position: relative;
+    z-index: 10;
+    background: rgba(30, 30, 46, 0.95);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    padding: 24px;
+    min-width: 320px;
+    max-width: 600px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.folder-overlay.open .folder-dialog {
+    transform: scale(1);
+}
+
+.folder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.folder-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.folder-grid {
+    justify-content: flex-start;
+    gap: 12px;
+}
