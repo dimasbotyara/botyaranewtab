@@ -153,7 +153,7 @@ def test_css_is_split_into_modules():
     css_dir = Path(__file__).resolve().parent.parent / "static" / "css"
     files = sorted(p.name for p in css_dir.glob("*.css"))
     assert "style.css" not in files, "monolithic stylesheet should be gone"
-    assert len(files) == 13, files
+    assert len(files) == 14, files
     # nothing should be left empty after the split
     for name in files:
         assert (css_dir / name).stat().st_size > 200, name

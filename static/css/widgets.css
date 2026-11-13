@@ -45,6 +45,25 @@
 .weather-desc {
     color: var(--text-secondary);
     font-size: 0.9rem;
+    white-space: normal;
+}
+
+.weather-retry {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 6px;
+    margin-left: 2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.weather-retry:hover {
+    color: var(--text);
+    border-color: var(--accent);
 }
 
 /* ─── Progress Widget ───────────────────────────────────────────────────── */

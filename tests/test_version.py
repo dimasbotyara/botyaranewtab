@@ -7,7 +7,7 @@ from config import APP_VERSION
 
 def test_version_format():
     assert re.fullmatch(r"\d+\.\d+\.\d+", APP_VERSION), APP_VERSION
-    assert APP_VERSION == "0.2.0"
+    assert APP_VERSION == "0.2.1"
 
 
 def test_version_api(client):

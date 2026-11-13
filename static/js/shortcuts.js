@@ -117,7 +117,41 @@ const Shortcuts = {
                 e.preventDefault();
                 this.openModal(parseInt(el.dataset.id));
             });
+            this.bindLongPress(el, () => this.openModal(parseInt(el.dataset.id)));
         });
+    },
+
+    // Right-click doesn't exist on touch screens — long-press opens the
+    // edit dialog instead (Android also fires contextmenu natively).
+    bindLongPress(el, onTrigger) {
+        let timer = null;
+        let longPressed = false;
+        const cancel = () => {
+            clearTimeout(timer);
+            timer = null;
+        };
+
+        el.addEventListener('pointerdown', (e) => {
+            if (e.pointerType !== 'touch') return;
+            longPressed = false;
+            timer = setTimeout(() => {
+                timer = null;
+                longPressed = true;
+                onTrigger();
+            }, 500);
+        });
+        el.addEventListener('pointermove', cancel);
+        el.addEventListener('pointerup', cancel);
+        el.addEventListener('pointercancel', cancel);
+
+        // Swallow the click that follows a long-press on a link
+        el.addEventListener('click', (e) => {
+            if (longPressed) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                longPressed = false;
+            }
+        }, true);
     },
 
     renderShortcutItem(sc, showLabels) {
@@ -158,6 +192,10 @@ const Shortcuts = {
             });
             el.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
+                this.closeFolder();
+                this.openModal(parseInt(el.dataset.id));
+            });
+            this.bindLongPress(el, () => {
                 this.closeFolder();
                 this.openModal(parseInt(el.dataset.id));
             });

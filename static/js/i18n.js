@@ -41,5 +41,8 @@ const I18n = {
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
             el.placeholder = this.t(el.dataset.i18nPlaceholder || el.getAttribute('data-i18n-placeholder'));
         });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            el.title = this.t(el.dataset.i18nTitle || el.getAttribute('data-i18n-title'));
+        });
     }
 };

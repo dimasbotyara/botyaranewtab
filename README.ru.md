@@ -13,7 +13,7 @@
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
-![Version](https://img.shields.io/badge/version-0.2.0-ffc857.svg)
+![Version](https://img.shields.io/badge/version-0.2.1-ffc857.svg)
 ![Type](https://img.shields.io/badge/type-Local--First-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
 ![Flask](https://img.shields.io/badge/flask-3.1-000000?logo=flask&logoColor=white)
@@ -104,7 +104,7 @@
 ### 🌤️ Виджеты
 - **Часы** — 24ч или 12ч (AM/PM), опционально секунды
 - **Приветствие** — 50+ вариантов по времени дня, на двух языках, с твоим именем
-- **Погода** — работает через [Open-Meteo](https://open-meteo.com/) (API-ключ **не нужен**!)
+- **Погода** — работает через [Open-Meteo](https://open-meteo.com/) с автоматическим резервом на [met.no](https://api.met.no/) и wttr.in (API-ключ **не нужен**!)
 - **Мировые часы** — время в разных часовых поясах
 - **Счётчики дней** — сколько осталось до дня рождения, отпуска, сессии D&D
 - **Заметки / Блокнот** — автосохранение по мере ввода
@@ -513,7 +513,7 @@ botyaranewtab/
 ├── config.py               # Хост, порт, пути, версия
 ├── database.py             # Слой SQLite + миграции
 ├── utils.py                # Бэкапы, сканирование шрифтов
-├── weather.py              # Интеграция с Open-Meteo
+├── weather.py              # Цепочка провайдеров: Open-Meteo → met.no → wttr.in
 ├── search_engine.py        # Bang-команды, калькулятор, конвертер
 ├── greetings.py            # 50+ приветствий по времени / языку
 ├── translations.py         # Строки i18n (en, ru)
@@ -566,7 +566,7 @@ botyaranewtab/
 - **rich** — красивый вывод в терминале
 - **Pillow** — извлечение доминирующего цвета из обоев
 - **BeautifulSoup** — парсинг favicon'ов со страниц
-- **Open-Meteo** — погода без API-ключа
+- **Open-Meteo / met.no / wttr.in** — погода без API-ключа
 
 ---
 

@@ -1,7 +1,7 @@
 /* Service Worker for Offline New Tab */
 // Bump this when static assets change: assets are served stale-while-revalidate,
 // so a new version tag is what guarantees the updated files win.
-const CACHE_NAME = 'botyaranewtab-v3';
+const CACHE_NAME = 'botyaranewtab-v4';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',
@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
     '/static/css/effects.css',
     '/static/css/hotkeys.css',
     '/static/css/utilities.css',
+    '/static/css/responsive.css',
     '/static/js/utils.js',
     '/static/js/app.js',
     '/static/js/i18n.js',

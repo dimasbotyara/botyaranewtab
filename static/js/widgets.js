@@ -4,10 +4,16 @@ const Widgets = {
     notesSaveTimer: null,
     weatherCache: null,
     weatherLastFetch: 0,
+    weatherFetchInFlight: false,
+    weatherRetryTimer: null,
+    weatherRefreshTimer: null,
+    weatherRetryDelay: 0,
+    weatherWasError: false,
 
     init() {
         this.startClock();
         this.updateGreeting();
+        document.getElementById('weather-retry')?.addEventListener('click', () => this.retryWeather());
     },
 
     update(settings) {
@@ -26,6 +32,7 @@ const Widgets = {
         // Weather
         this.toggle('widget-weather', s.widget_weather);
         if (s.widget_weather) this.loadWeather(s);
+        else this.stopWeather();
 
         // Notes
         this.toggle('widget-notes', s.widget_notes);
@@ -147,30 +154,108 @@ const Widgets = {
 
     async loadWeather(s) {
         s = s || App.settings;
-        if (!s.weather_lat || !s.weather_lon) return;
+        if (s.weather_lat == null || s.weather_lon == null) return;
         if (Date.now() - this.weatherLastFetch < 600000 && this.weatherCache) {
             this.renderWeather(this.weatherCache);
             return;
         }
+        if (this.weatherFetchInFlight) return;
 
+        // Show last known weather (from a previous session) while fetching
+        if (!this.weatherCache) this.renderStoredWeather();
+
+        this.weatherFetchInFlight = true;
         try {
             const resp = await fetch(`/api/weather?lat=${s.weather_lat}&lon=${s.weather_lon}&units=${s.weather_units || 'celsius'}`);
             const data = await resp.json();
-            if (!data.error) {
-                this.weatherCache = data;
-                this.weatherLastFetch = Date.now();
-                this.renderWeather(data);
-            }
+            if (data.error) throw new Error(data.error);
+
+            this.weatherCache = data;
+            this.weatherLastFetch = Date.now();
+            this.weatherRetryDelay = 0;
+            try {
+                localStorage.setItem('weather_cache', JSON.stringify({ data, ts: this.weatherLastFetch }));
+            } catch (e) {}
+            this.renderWeather(data);
+            this.scheduleWeatherRefresh();
         } catch (e) {
             console.error('Weather error:', e);
+            this.scheduleWeatherRetry();
+        } finally {
+            this.weatherFetchInFlight = false;
         }
     },
 
+    renderStoredWeather() {
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem('weather_cache') || 'null'); } catch (e) {}
+        if (!stored || !stored.data) return;
+        if (Date.now() - (stored.ts || 0) > 30 * 60000) stored.data = { ...stored.data, stale: true };
+        this.weatherCache = stored.data;
+        this.weatherLastFetch = stored.ts || 0;
+        this.renderWeather(stored.data);
+    },
+
+    setWeatherError(show) {
+        const retryBtn = document.getElementById('weather-retry');
+        if (retryBtn) retryBtn.classList.toggle('hidden', !show);
+        if (show && !this.weatherWasError) {
+            Toast.error(I18n.t('weather_error_toast'));
+        }
+        this.weatherWasError = show;
+    },
+
+    renderWeatherError() {
+        const icon = document.getElementById('weather-icon');
+        const temp = document.getElementById('weather-temp');
+        const desc = document.getElementById('weather-desc');
+        if (icon) icon.textContent = '⚠️';
+        if (temp) temp.textContent = '—';
+        if (desc) desc.textContent = I18n.t('weather_error');
+    },
+
+    scheduleWeatherRetry() {
+        this.setWeatherError(true);
+        this.renderWeatherError();
+        clearTimeout(this.weatherRetryTimer);
+        this.weatherRetryDelay = this.weatherRetryDelay > 0
+            ? Math.min(this.weatherRetryDelay * 2, 120000)
+            : 30000;
+        this.weatherRetryTimer = setTimeout(() => this.loadWeather(), this.weatherRetryDelay);
+    },
+
+    retryWeather() {
+        clearTimeout(this.weatherRetryTimer);
+        this.weatherRetryDelay = 0;
+        this.weatherLastFetch = 0;
+        this.loadWeather();
+    },
+
+    scheduleWeatherRefresh() {
+        clearTimeout(this.weatherRefreshTimer);
+        this.weatherRefreshTimer = setTimeout(() => this.loadWeather(), 600000);
+    },
+
+    stopWeather() {
+        clearTimeout(this.weatherRetryTimer);
+        clearTimeout(this.weatherRefreshTimer);
+        this.weatherRetryDelay = 0;
+        this.setWeatherError(false);
+    },
+
     renderWeather(data) {
-        document.getElementById('weather-icon').textContent = data.icon;
-        document.getElementById('weather-temp').textContent = `${data.temperature}${data.unit}`;
+        this.setWeatherError(false);
+        const icon = document.getElementById('weather-icon');
+        const temp = document.getElementById('weather-temp');
+        const desc = document.getElementById('weather-desc');
+        if (icon) icon.textContent = data.icon;
+        if (temp) temp.textContent = `${data.temperature}${data.unit}`;
         const descKey = I18n.currentLang === 'ru' ? 'description_ru' : 'description_en';
-        document.getElementById('weather-desc').textContent = data[descKey];
+        if (desc) {
+            let text = data[descKey];
+            if (data.stale) text += ` · ${I18n.t('weather_stale')}`;
+            desc.textContent = text;
+        }
     },
 
     async initNotes() {

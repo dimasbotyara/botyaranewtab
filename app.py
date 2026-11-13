@@ -932,7 +932,7 @@ def api_weather():
     data = get_weather(lat, lon, units)
     if data:
         return jsonify(data)
-    return jsonify({"error": "Could not fetch weather"}), 500
+    return jsonify({"error": "Weather providers unavailable"}), 502
 
 
 @app.route("/api/weather/geocode")

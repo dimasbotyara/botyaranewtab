@@ -162,6 +162,8 @@ const Background = {
     },
 
     enableParallax() {
+        // Mouse-driven parallax makes no sense on touch screens
+        if (!window.matchMedia('(pointer: fine)').matches) return;
         this.parallaxHandler = (e) => {
             const x = (e.clientX / window.innerWidth - 0.5) * 20;
             const y = (e.clientY / window.innerHeight - 0.5) * 20;

@@ -13,7 +13,7 @@ No cloud. No telemetry. No accounts. Just you and your data.
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
-![Version](https://img.shields.io/badge/version-0.2.0-ffc857.svg)
+![Version](https://img.shields.io/badge/version-0.2.1-ffc857.svg)
 ![Type](https://img.shields.io/badge/type-Local--First-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
 ![Flask](https://img.shields.io/badge/flask-3.1-000000?logo=flask&logoColor=white)
@@ -104,7 +104,7 @@ Unlike other new tab extensions that lock you into their design, their servers, 
 ### 🌤️ Widgets
 - **Clock** — 24h or 12h (AM/PM), optional seconds
 - **Greeting** — 50+ variations per time-of-day, per language, with your name
-- **Weather** — powered by [Open-Meteo](https://open-meteo.com/) (no API key needed!)
+- **Weather** — powered by [Open-Meteo](https://open-meteo.com/) with automatic fallback to [met.no](https://api.met.no/) and wttr.in (no API key needed!)
 - **World clocks** — track time in multiple timezones
 - **Countdowns** — days until your birthday, vacation, D&D session
 - **Notes / Scratchpad** — auto-saves as you type
@@ -507,7 +507,7 @@ botyaranewtab/
 ├── config.py               # Host, port, paths, version
 ├── database.py             # SQLite layer + migrations
 ├── utils.py                # Backups, font scanning
-├── weather.py              # Open-Meteo integration
+├── weather.py              # Open-Meteo → met.no → wttr.in weather chain
 ├── search_engine.py        # Bang commands, calculator, unit converter
 ├── greetings.py            # 50+ greetings per time / language
 ├── translations.py         # i18n strings (en, ru)
@@ -560,7 +560,7 @@ botyaranewtab/
 - **rich** — pretty terminal output
 - **Pillow** — dominant color extraction from wallpapers
 - **BeautifulSoup** — favicon scraping from web pages
-- **Open-Meteo** — weather without an API key
+- **Open-Meteo / met.no / wttr.in** — weather without an API key
 
 ---
 

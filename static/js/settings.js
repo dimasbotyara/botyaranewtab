@@ -420,16 +420,10 @@ const Settings = {
                     try {
                         const resp = await fetch(`/api/weather/geocode?city=${encodeURIComponent(city)}`);
                         const data = await resp.json();
-                        console.log('[GEOCODE] response:', data);
-                        console.log('[GEOCODE] data.lat type:', typeof data.lat, 'value:', data.lat);
                         if (data.lat) {
                             App.updateSetting('weather_city', data.name);
                             App.updateSetting('weather_lat', data.lat);
                             App.updateSetting('weather_lon', data.lon);
-                            console.log('[GEOCODE] after 3 calls, App.settings:',
-                                        App.settings.weather_city,
-                                        App.settings.weather_lat,
-                                        App.settings.weather_lon);
                             cityInput.value = data.name;
                             Toast.success(`📍 ${data.name}, ${data.country}`);
                             Widgets.weatherCache = null;
